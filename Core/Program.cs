@@ -1,6 +1,8 @@
 using Core.Data;
 using Core.Identity;
 using Core.Models;
+using Core.Options;
+using Core.Services.Email;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Core.Utils;
@@ -18,12 +20,30 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
     ?? throw new InvalidOperationException(
         "Database connection settings were not found. Set 'ConnectionStrings__DefaultConnection' or POSTGRES_* environment variables.");
 
+var smtpOptions = SmtpOptions.FromConfiguration(builder.Configuration);
+if (!builder.Environment.IsDevelopment() && !smtpOptions.IsConfigured)
+{
+    throw new InvalidOperationException(
+        "SMTP settings were not found. Set SMTP_HOST, SMTP_PORT, FROM_EMAIL and optional SMTP_USERNAME/SMTP_PASSWORD.");
+}
+
+builder.Services.AddSingleton(smtpOptions);
+builder.Services.AddTransient<IApplicationEmailSender>(services =>
+    smtpOptions.IsConfigured
+        ? ActivatorUtilities.CreateInstance<SmtpEmailSender>(services)
+        : ActivatorUtilities.CreateInstance<DevelopmentEmailSender>(services));
+builder.Services.AddTransient<IdentityEmailSender>();
+builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender>(services =>
+    services.GetRequiredService<IdentityEmailSender>());
+builder.Services.AddTransient<Microsoft.AspNetCore.Identity.IEmailSender<ApplicationUser>>(services =>
+    services.GetRequiredService<IdentityEmailSender>());
+
 builder.Services.AddDbContext<ApplicationDbContext>(options=>
     options.UseNpgsql(connectionString));
 
 builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
     {
-        options.SignIn.RequireConfirmedAccount = false; //! Change after set up SMTP
+        options.SignIn.RequireConfirmedAccount = smtpOptions.RequireEmailVerification;
         
         options.Password.RequiredLength = 9;
         options.Password.RequireDigit = true;
