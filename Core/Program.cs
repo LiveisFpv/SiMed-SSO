@@ -1,4 +1,5 @@
 using Core.Data;
+using Core.Identity;
 using Core.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -38,7 +39,21 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
         // options.ClaimsIdentity.RoleClaimType=
     })
     .AddRoles<IdentityRole>()
+    .AddSignInManager<ApplicationSignInManager>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.ExpireTimeSpan = TimeSpan.FromDays(14);
+    options.SlidingExpiration = true;
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
+});
 
 builder.Services.Configure<SecurityStampValidatorOptions>(options =>
 {
