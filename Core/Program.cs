@@ -43,6 +43,8 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 
 var app = builder.Build();
 
+await IdentitySeeder.SeedAsync(app.Services, app.Configuration);
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
