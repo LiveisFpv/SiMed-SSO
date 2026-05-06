@@ -87,3 +87,67 @@
         </form>
     }
 </div>
+
+<div class="border-top pt-4 mt-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h2 class="h5 mb-0">Sessions</h2>
+        <form method="post" asp-page-handler="RevokeSessions" asp-route-id="@Model.UserDetails.Id">
+            <button type="submit" class="btn btn-outline-danger">Revoke all sessions</button>
+        </form>
+    </div>
+
+    @if (Model.UserDetails.Sessions.Count == 0)
+    {
+        <p class="text-muted">No sessions recorded.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-sm align-middle">
+                <thead>
+                    <tr>
+                        <th>Created</th>
+                        <th>Last seen</th>
+                        <th>IP</th>
+                        <th>Browser</th>
+                        <th>OS</th>
+                        <th>Device</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var session in Model.UserDetails.Sessions)
+                    {
+                        <tr>
+                            <td>@session.CreatedAtUtc.ToString("u")</td>
+                            <td>@session.LastSeenAtUtc.ToString("u")</td>
+                            <td>@(session.IpAddress ?? "Unknown")</td>
+                            <td>@(session.Browser ?? "Unknown")</td>
+                            <td>@(session.OperatingSystem ?? "Unknown")</td>
+                            <td>@(session.Device ?? "Unknown")</td>
+                            <td>
+                                @if (session.IsCurrent)
+                                {
+                                    <span class="badge text-bg-primary me-1">Current</span>
+                                }
+
+                                @if (session.IsActive)
+                                {
+                                    <span class="badge text-bg-success">Active</span>
+                                }
+                                else if (session.RevokedAtUtc is not null)
+                                {
+                                    <span class="badge text-bg-secondary">Revoked</span>
+                                }
+                                else
+                                {
+                                    <span class="badge text-bg-secondary">Expired</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

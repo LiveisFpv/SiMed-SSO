@@ -2,6 +2,7 @@ using System.Text;
 using Core.Identity;
 using Core.Models;
 using Core.Models.Account;
+using Core.Services.Sessions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,20 +16,20 @@ namespace Core.Pages.Account;
 public class RegisterModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IEmailSender<ApplicationUser> _emailSender;
     private readonly IdentityOptions _identityOptions;
+    private readonly IUserSessionService _userSessionService;
 
     public RegisterModel(
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
         IEmailSender<ApplicationUser> emailSender,
-        IOptions<IdentityOptions> identityOptions)
+        IOptions<IdentityOptions> identityOptions,
+        IUserSessionService userSessionService)
     {
         _userManager = userManager;
-        _signInManager = signInManager;
         _emailSender = emailSender;
         _identityOptions = identityOptions.Value;
+        _userSessionService = userSessionService;
     }
 
     [BindProperty]
@@ -68,7 +69,7 @@ public class RegisterModel : PageModel
             return RedirectToPage("/Account/RegisterConfirmation", new { email = Input.Email });
         }
 
-        await _signInManager.SignInAsync(user, isPersistent: false);
+        await _userSessionService.CreateSessionAndSignInAsync(HttpContext, user, isPersistent: false);
         return RedirectToLocal(Input.ReturnUrl);
     }
 

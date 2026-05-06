@@ -1,8 +1,10 @@
 using Core.Data;
 using Core.Identity;
+using Core.Middleware;
 using Core.Models;
 using Core.Options;
 using Core.Services.Email;
+using Core.Services.Sessions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Core.Utils;
@@ -34,6 +36,8 @@ builder.Services.AddTransient<IApplicationEmailSender>(services =>
 builder.Services.AddTransient<IdentityEmailSender>();
 builder.Services.AddTransient<Microsoft.AspNetCore.Identity.IEmailSender<ApplicationUser>>(services =>
     services.GetRequiredService<IdentityEmailSender>());
+builder.Services.AddScoped<IUserSessionService, UserSessionService>();
+builder.Services.AddHostedService<UserSessionCleanupService>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options=>
     options.UseNpgsql(connectionString));
@@ -84,7 +88,7 @@ await IdentitySeeder.SeedAsync(app.Services, app.Configuration);
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
+    app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
@@ -93,6 +97,7 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseAuthentication();
+app.UseMiddleware<UserSessionTrackingMiddleware>();
 app.UseAuthorization();
 
 app.MapStaticAssets();

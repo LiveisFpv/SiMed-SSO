@@ -1,5 +1,6 @@
 using Core.Models;
 using Core.Models.Account;
+using Core.Services.Sessions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,14 +12,14 @@ namespace Core.Pages.Account;
 public class ChangePasswordModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IUserSessionService _userSessionService;
 
     public ChangePasswordModel(
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        IUserSessionService userSessionService)
     {
         _userManager = userManager;
-        _signInManager = signInManager;
+        _userSessionService = userSessionService;
     }
 
     [BindProperty]
@@ -43,7 +44,7 @@ public class ChangePasswordModel : PageModel
             return Page();
         }
 
-        await _signInManager.RefreshSignInAsync(user);
+        await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
         TempData["StatusMessage"] = "Password was changed.";
         return RedirectToPage("/Account/Manage");
     }

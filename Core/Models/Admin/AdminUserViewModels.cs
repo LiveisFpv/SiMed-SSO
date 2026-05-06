@@ -31,6 +31,7 @@ public sealed class AdminUserDetailsViewModel
     public bool PhoneNumberConfirmed { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public IReadOnlyCollection<string> Roles { get; set; } = [];
+    public IReadOnlyCollection<UserSessionViewModel> Sessions { get; set; } = [];
 }
 
 public sealed class EditUserRolesViewModel

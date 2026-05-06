@@ -1,5 +1,6 @@
 using System.Text;
 using Core.Models;
+using Core.Services.Sessions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -12,14 +13,14 @@ namespace Core.Pages.Account;
 public class ConfirmEmailChangeModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IUserSessionService _userSessionService;
 
     public ConfirmEmailChangeModel(
         UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager)
+        IUserSessionService userSessionService)
     {
         _userManager = userManager;
-        _signInManager = signInManager;
+        _userSessionService = userSessionService;
     }
 
     public bool Succeeded { get; private set; }
@@ -45,7 +46,7 @@ public class ConfirmEmailChangeModel : PageModel
             var setUserNameResult = await _userManager.SetUserNameAsync(user, email);
             if (setUserNameResult.Succeeded)
             {
-                await _signInManager.RefreshSignInAsync(user);
+                await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
             }
         }
 

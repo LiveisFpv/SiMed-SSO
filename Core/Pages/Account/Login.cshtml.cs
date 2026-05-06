@@ -1,5 +1,6 @@
 using Core.Models;
 using Core.Models.Account;
+using Core.Services.Sessions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,10 +12,17 @@ namespace Core.Pages.Account;
 public class LoginModel : PageModel
 {
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserSessionService _userSessionService;
 
-    public LoginModel(SignInManager<ApplicationUser> signInManager)
+    public LoginModel(
+        SignInManager<ApplicationUser> signInManager,
+        UserManager<ApplicationUser> userManager,
+        IUserSessionService userSessionService)
     {
         _signInManager = signInManager;
+        _userManager = userManager;
+        _userSessionService = userSessionService;
     }
 
     [BindProperty]
@@ -32,14 +40,18 @@ public class LoginModel : PageModel
             return Page();
         }
 
-        var result = await _signInManager.PasswordSignInAsync(
-            Input.Email,
-            Input.Password,
-            Input.RememberMe,
-            lockoutOnFailure: true);
+        var user = await _userManager.FindByEmailAsync(Input.Email);
+        if (user is null)
+        {
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return Page();
+        }
+
+        var result = await _signInManager.CheckPasswordSignInAsync(user, Input.Password, lockoutOnFailure: true);
 
         if (result.Succeeded)
         {
+            await _userSessionService.CreateSessionAndSignInAsync(HttpContext, user, Input.RememberMe);
             return RedirectToLocal(Input.ReturnUrl);
         }
 
