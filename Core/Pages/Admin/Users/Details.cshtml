@@ -1,0 +1,89 @@
+@page
+@model DetailsModel
+
+@{
+    ViewData["Title"] = "User details";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">User details</h1>
+        <p class="text-muted mb-0">@Model.UserDetails.Email</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
+        <a class="btn btn-primary" asp-page="./EditRoles" asp-route-id="@Model.UserDetails.Id">Edit roles</a>
+    </div>
+</div>
+
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div class="alert alert-success" role="alert">@statusMessage</div>
+}
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">User name</dt>
+    <dd class="col-sm-9">@Model.UserDetails.UserName</dd>
+
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm-9">@Model.UserDetails.Email</dd>
+
+    <dt class="col-sm-3">Roles</dt>
+    <dd class="col-sm-9">
+        @if (Model.UserDetails.Roles.Count > 0)
+        {
+            foreach (var role in Model.UserDetails.Roles)
+            {
+                <span class="badge text-bg-secondary me-1">@role</span>
+            }
+        }
+        else
+        {
+            <span class="text-muted">No roles</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Active</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.IsActive ? "Yes" : "No")</dd>
+
+    <dt class="col-sm-3">Locked out</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.IsLockedOut ? $"Yes, until {Model.UserDetails.LockoutEnd:u}" : "No")</dd>
+
+    <dt class="col-sm-3">Email confirmed</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.EmailConfirmed ? "Yes" : "No")</dd>
+
+    <dt class="col-sm-3">Phone</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.PhoneNumber ?? "Not set")</dd>
+
+    <dt class="col-sm-3">Phone confirmed</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.PhoneNumberConfirmed ? "Yes" : "No")</dd>
+
+    <dt class="col-sm-3">Two-factor enabled</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.TwoFactorEnabled ? "Yes" : "No")</dd>
+
+    <dt class="col-sm-3">Failed access count</dt>
+    <dd class="col-sm-9">@Model.UserDetails.AccessFailedCount</dd>
+
+    <dt class="col-sm-3">Created</dt>
+    <dd class="col-sm-9">@Model.UserDetails.CreatedAtUtc.ToString("u")</dd>
+</dl>
+
+<div class="border-top pt-3">
+    @if (Model.UserDetails.IsActive)
+    {
+        <form method="post" asp-page-handler="Deactivate" asp-route-id="@Model.UserDetails.Id">
+            <button type="submit" class="btn btn-danger" disabled="@Model.UserDetails.IsCurrentUser">Deactivate user</button>
+        </form>
+    }
+    else
+    {
+        <form method="post" asp-page-handler="Reactivate" asp-route-id="@Model.UserDetails.Id">
+            <button type="submit" class="btn btn-success">Reactivate user</button>
+        </form>
+    }
+</div>

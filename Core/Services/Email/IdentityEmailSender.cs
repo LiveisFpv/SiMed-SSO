@@ -1,12 +1,10 @@
 using System.Net;
 using Core.Models;
 using Microsoft.AspNetCore.Identity;
-using IdentityUiEmailSender = Microsoft.AspNetCore.Identity.UI.Services.IEmailSender;
 
 namespace Core.Services.Email;
 
 public sealed class IdentityEmailSender :
-    IdentityUiEmailSender,
     IEmailSender<ApplicationUser>
 {
     private readonly IApplicationEmailSender _emailSender;
@@ -15,9 +13,6 @@ public sealed class IdentityEmailSender :
     {
         _emailSender = emailSender;
     }
-
-    public Task SendEmailAsync(string email, string subject, string htmlMessage) =>
-        _emailSender.SendEmailAsync(email, subject, htmlMessage);
 
     public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
     {

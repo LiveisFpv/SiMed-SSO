@@ -12,7 +12,6 @@ DbUtils.LoadDotEnv();
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -33,15 +32,13 @@ builder.Services.AddTransient<IApplicationEmailSender>(services =>
         ? ActivatorUtilities.CreateInstance<SmtpEmailSender>(services)
         : ActivatorUtilities.CreateInstance<DevelopmentEmailSender>(services));
 builder.Services.AddTransient<IdentityEmailSender>();
-builder.Services.AddTransient<Microsoft.AspNetCore.Identity.UI.Services.IEmailSender>(services =>
-    services.GetRequiredService<IdentityEmailSender>());
 builder.Services.AddTransient<Microsoft.AspNetCore.Identity.IEmailSender<ApplicationUser>>(services =>
     services.GetRequiredService<IdentityEmailSender>());
 
 builder.Services.AddDbContext<ApplicationDbContext>(options=>
     options.UseNpgsql(connectionString));
 
-builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         options.SignIn.RequireConfirmedAccount = smtpOptions.RequireEmailVerification;
         
@@ -58,15 +55,15 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
         // options.Tokens.PasswordResetTokenProvider=
         // options.ClaimsIdentity.RoleClaimType=
     })
-    .AddRoles<IdentityRole>()
     .AddSignInManager<ApplicationSignInManager>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.ExpireTimeSpan = TimeSpan.FromDays(14);
     options.SlidingExpiration = true;
-    options.LoginPath = "/Identity/Account/Login";
+    options.LoginPath = "/Account/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
     options.Cookie.HttpOnly = true;
     options.Cookie.SameSite = SameSiteMode.Lax;
@@ -100,11 +97,7 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
-app.MapControllerRoute(
-    name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+app.MapRazorPages()
     .WithStaticAssets();
-
-app.MapRazorPages();
 
 app.Run();

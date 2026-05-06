@@ -1,0 +1,106 @@
+@page
+@model IndexModel
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Users</h1>
+        <p class="text-muted mb-0">Review account state, lockouts, and assigned roles.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Back</a>
+</div>
+
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div class="alert alert-success" role="alert">@statusMessage</div>
+}
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+<div class="table-responsive">
+    <table class="table table-sm align-middle">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Roles</th>
+                <th>Status</th>
+                <th>Email</th>
+                <th>Created</th>
+                <th class="text-end">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model.Users)
+            {
+                <tr>
+                    <td>
+                        <div class="fw-semibold">@user.Email</div>
+                        <div class="text-muted small">@user.UserName</div>
+                    </td>
+                    <td>
+                        @if (user.Roles.Count > 0)
+                        {
+                            foreach (var role in user.Roles)
+                            {
+                                <span class="badge text-bg-secondary me-1">@role</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">No roles</span>
+                        }
+                    </td>
+                    <td>
+                        @if (user.IsActive)
+                        {
+                            <span class="badge text-bg-success">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge text-bg-danger">Inactive</span>
+                        }
+
+                        @if (user.IsLockedOut)
+                        {
+                            <span class="badge text-bg-warning">Locked</span>
+                        }
+                    </td>
+                    <td>
+                        @if (user.EmailConfirmed)
+                        {
+                            <span class="text-success">Confirmed</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">Unconfirmed</span>
+                        }
+                    </td>
+                    <td>@user.CreatedAtUtc.ToString("u")</td>
+                    <td class="text-end">
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="./Details" asp-route-id="@user.Id">Details</a>
+                        <a class="btn btn-sm btn-outline-primary" asp-page="./EditRoles" asp-route-id="@user.Id">Roles</a>
+
+                        @if (user.IsActive)
+                        {
+                            <form class="d-inline" method="post" asp-page-handler="Deactivate" asp-route-id="@user.Id">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" disabled="@user.IsCurrentUser">Deactivate</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form class="d-inline" method="post" asp-page-handler="Reactivate" asp-route-id="@user.Id">
+                                <button type="submit" class="btn btn-sm btn-outline-success">Reactivate</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

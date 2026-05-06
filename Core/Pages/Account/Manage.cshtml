@@ -1,0 +1,39 @@
+@page
+@model ManageModel
+
+@{
+    ViewData["Title"] = "Account";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Account</h1>
+        <p class="text-muted mb-0">@Model.Account.Email</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Account/ChangeEmail">Change email</a>
+        <a class="btn btn-outline-primary" asp-page="/Account/ChangePassword">Change password</a>
+    </div>
+</div>
+
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div class="alert alert-success" role="alert">@statusMessage</div>
+}
+
+<dl class="row">
+    <dt class="col-sm-3">User name</dt>
+    <dd class="col-sm-9">@Model.Account.UserName</dd>
+
+    <dt class="col-sm-3">Email</dt>
+    <dd class="col-sm-9">@Model.Account.Email</dd>
+
+    <dt class="col-sm-3">Email confirmed</dt>
+    <dd class="col-sm-9">@(Model.Account.EmailConfirmed ? "Yes" : "No")</dd>
+
+    <dt class="col-sm-3">Phone</dt>
+    <dd class="col-sm-9">@(Model.Account.PhoneNumber ?? "Not set")</dd>
+
+    <dt class="col-sm-3">MFA enabled</dt>
+    <dd class="col-sm-9">@(Model.Account.TwoFactorEnabled ? "Yes" : "No")</dd>
+</dl>

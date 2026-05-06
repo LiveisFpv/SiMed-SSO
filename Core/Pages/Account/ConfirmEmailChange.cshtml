@@ -1,0 +1,20 @@
+@page
+@model ConfirmEmailChangeModel
+
+@{
+    ViewData["Title"] = "Email change";
+}
+
+<div class="text-center py-5">
+    <h1 class="h3 mb-3">Email change</h1>
+    @if (Model.Succeeded)
+    {
+        <p class="text-muted mb-4">Your email has been changed.</p>
+        <a class="btn btn-primary" asp-page="/Account/Manage">Back to account</a>
+    }
+    else
+    {
+        <p class="text-muted mb-4">The email change link is invalid or expired.</p>
+        <a class="btn btn-outline-primary" asp-page="/Account/Manage">Back to account</a>
+    }
+</div>

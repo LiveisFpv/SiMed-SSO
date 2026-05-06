@@ -1,0 +1,34 @@
+@page
+@model ChangeEmailModel
+
+@{
+    ViewData["Title"] = "Change email";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <h1 class="h3 mb-4">Change email</h1>
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input asp-for="Input.CurrentEmail" type="hidden" />
+
+            <div class="mb-3">
+                <label asp-for="Input.CurrentEmail" class="form-label"></label>
+                <input asp-for="Input.CurrentEmail" class="form-control" disabled />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.NewEmail" class="form-label"></label>
+                <input asp-for="Input.NewEmail" class="form-control" autocomplete="email" />
+                <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Send confirmation</button>
+            <a class="btn btn-outline-secondary" asp-page="/Account/Manage">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

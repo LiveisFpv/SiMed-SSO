@@ -1,0 +1,37 @@
+@page
+@model IndexModel
+
+@{
+    ViewData["Title"] = "Admin";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Admin panel</h1>
+        <p class="text-muted mb-0">Manage SSO users, roles, and application access.</p>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="border rounded p-3 h-100">
+            <h2 class="h5">Users</h2>
+            <p class="text-muted mb-3">Review registered accounts and account state.</p>
+            <a class="btn btn-primary" asp-page="/Admin/Users/Index">Open users</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="border rounded p-3 h-100">
+            <h2 class="h5">Roles</h2>
+            <p class="text-muted mb-3">Assign administrative access and default user roles.</p>
+            <a class="btn btn-primary disabled" aria-disabled="true">Coming next</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="border rounded p-3 h-100">
+            <h2 class="h5">Security</h2>
+            <p class="text-muted mb-3">Track lockouts, email confirmation, and MFA status.</p>
+            <a class="btn btn-primary disabled" aria-disabled="true">Coming next</a>
+        </div>
+    </div>
+</div>

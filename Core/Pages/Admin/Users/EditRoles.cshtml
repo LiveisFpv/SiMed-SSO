@@ -1,0 +1,34 @@
+@page
+@model EditRolesModel
+
+@{
+    ViewData["Title"] = "Edit roles";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Edit roles</h1>
+        <p class="text-muted mb-0">@Model.Input.Email</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="./Details" asp-route-id="@Model.Input.UserId">Back</a>
+</div>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <input asp-for="Input.UserId" type="hidden" />
+
+    <div class="vstack gap-2 mb-4">
+        @for (var i = 0; i < Model.Input.Roles.Count; i++)
+        {
+            <div class="form-check">
+                <input asp-for="Input.Roles[i].RoleName" type="hidden" />
+                <input class="form-check-input" asp-for="Input.Roles[i].IsSelected" />
+                <label class="form-check-label" asp-for="Input.Roles[i].IsSelected">
+                    @Model.Input.Roles[i].RoleName
+                </label>
+            </div>
+        }
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save roles</button>
+</form>
