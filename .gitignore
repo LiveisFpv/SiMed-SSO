@@ -39,6 +39,10 @@ ScaffoldingReadMe.txt
 # dotenv environment variables file
 .env
 
+# Local/private certificates
+*.pfx
+certs/
+
 # Others
 ~$*
 *~

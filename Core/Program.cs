@@ -30,13 +30,14 @@ if (!builder.Environment.IsDevelopment() && !smtpOptions.IsConfigured)
         "SMTP settings were not found. Set SMTP_HOST, SMTP_PORT, FROM_EMAIL and optional SMTP_USERNAME/SMTP_PASSWORD.");
 }
 
-var issuer = builder.Configuration["SSO_ISSUER"];
-if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(issuer))
+var oidcOptions = OidcOptions.FromConfiguration(builder.Configuration);
+if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(oidcOptions.Issuer))
 {
     throw new InvalidOperationException("OIDC issuer was not configured. Set SSO_ISSUER in non-Development environments.");
 }
 
 builder.Services.AddSingleton(smtpOptions);
+builder.Services.AddSingleton(oidcOptions);
 builder.Services.AddTransient<IApplicationEmailSender>(services =>
     smtpOptions.IsConfigured
         ? ActivatorUtilities.CreateInstance<SmtpEmailSender>(services)
@@ -85,7 +86,10 @@ builder.Services.AddOpenIddict()
     .AddServer(options =>
     {
         options.SetAuthorizationEndpointUris("/connect/authorize")
-            .SetTokenEndpointUris("/connect/token");
+            .SetTokenEndpointUris("/connect/token")
+            .SetConfigurationEndpointUris("/.well-known/openid-configuration")
+            .SetJsonWebKeySetEndpointUris("/.well-known/jwks")
+            .SetUserInfoEndpointUris("/connect/userinfo");
 
         options.AllowAuthorizationCodeFlow()
             .RequireProofKeyForCodeExchange()
@@ -101,9 +105,9 @@ builder.Services.AddOpenIddict()
             OpenIddictConstants.Scopes.Email,
             OpenIddictConstants.Scopes.OfflineAccess);
 
-        if (!string.IsNullOrWhiteSpace(issuer))
+        if (!string.IsNullOrWhiteSpace(oidcOptions.Issuer))
         {
-            options.SetIssuer(new Uri(issuer));
+            options.SetIssuer(new Uri(oidcOptions.Issuer));
         }
 
         if (builder.Environment.IsDevelopment())
@@ -113,13 +117,14 @@ builder.Services.AddOpenIddict()
         }
         else
         {
-            throw new InvalidOperationException(
-                "OIDC signing/encryption certificates are not configured for non-Development environments.");
+            options.AddEncryptionCertificate(oidcOptions.LoadEncryptionCertificate(builder.Environment))
+                .AddSigningCertificate(oidcOptions.LoadSigningCertificate(builder.Environment));
         }
 
         var aspNetCore = options.UseAspNetCore()
             .EnableAuthorizationEndpointPassthrough()
             .EnableTokenEndpointPassthrough()
+            .EnableUserInfoEndpointPassthrough()
             .EnableStatusCodePagesIntegration();
 
         if (builder.Environment.IsDevelopment())
