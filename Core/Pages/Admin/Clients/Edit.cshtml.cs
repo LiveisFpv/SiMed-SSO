@@ -20,7 +20,7 @@ public class EditModel : PageModel
     [BindProperty]
     public OAuthClientEditViewModel Input { get; set; } = new();
 
-    public async Task<IActionResult> OnGetAsync(Guid id)
+    public async Task<IActionResult> OnGetAsync(string id)
     {
         var model = await _clients.GetEditModelAsync(id, HttpContext.RequestAborted);
         if (model is null)

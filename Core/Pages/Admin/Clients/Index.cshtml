@@ -29,7 +29,7 @@
                 <th>Scopes</th>
                 <th>Redirect URIs</th>
                 <th>Status</th>
-                <th>Updated</th>
+                <th>State</th>
                 <th class="text-end">Actions</th>
             </tr>
         </thead>
@@ -65,7 +65,7 @@
                             <span class="badge text-bg-info">PKCE</span>
                         }
                     </td>
-                    <td>@client.UpdatedAtUtc.ToString("u")</td>
+                    <td>@(client.IsActive ? "Active" : "Inactive")</td>
                     <td class="text-end">
                         <a class="btn btn-sm btn-outline-secondary" asp-page="./Details" asp-route-id="@client.Id">Details</a>
                         <a class="btn btn-sm btn-outline-primary" asp-page="./Edit" asp-route-id="@client.Id">Edit</a>

@@ -10,9 +10,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options):base(options){}
 
     public DbSet<UserSession> UserSessions => Set<UserSession>();
-    public DbSet<OAuthClient> OAuthClients => Set<OAuthClient>();
-    public DbSet<OAuthClientRedirectUri> OAuthClientRedirectUris => Set<OAuthClientRedirectUri>();
-    public DbSet<OAuthClientScope> OAuthClientScopes => Set<OAuthClientScope>();
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -54,68 +51,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
             entity.HasIndex(session => session.UserId);
             entity.HasIndex(session => session.RevokedAtUtc);
             entity.HasIndex(session => session.ExpiresAtUtc);
-        });
-
-        builder.Entity<OAuthClient>(entity =>
-        {
-            entity.HasKey(client => client.Id);
-            entity.HasAlternateKey(client => client.ClientId);
-
-            entity.Property(client => client.ClientId)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(client => client.ClientSecretHash)
-                .IsRequired();
-
-            entity.Property(client => client.DisplayName)
-                .IsRequired()
-                .HasMaxLength(200);
-
-            entity.Property(client => client.Description)
-                .HasMaxLength(1000);
-
-            entity.Property(client => client.CreatedByUserId)
-                .HasMaxLength(450);
-
-        });
-
-        builder.Entity<OAuthClientRedirectUri>(entity =>
-        {
-            entity.HasKey(redirectUri => new { redirectUri.ClientId, redirectUri.Uri });
-
-            entity.Property(redirectUri => redirectUri.ClientId)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(redirectUri => redirectUri.Uri)
-                .IsRequired()
-                .HasMaxLength(2048);
-
-            entity.HasOne(redirectUri => redirectUri.Client)
-                .WithMany(client => client.RedirectUris)
-                .HasForeignKey(redirectUri => redirectUri.ClientId)
-                .HasPrincipalKey(client => client.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
-
-        builder.Entity<OAuthClientScope>(entity =>
-        {
-            entity.HasKey(scope => new { scope.ClientId, scope.Scope });
-
-            entity.Property(scope => scope.ClientId)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.Property(scope => scope.Scope)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            entity.HasOne(scope => scope.Client)
-                .WithMany(client => client.Scopes)
-                .HasForeignKey(scope => scope.ClientId)
-                .HasPrincipalKey(client => client.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
         });
 
         builder.Entity<IdentityUserLogin<string>>(entity =>

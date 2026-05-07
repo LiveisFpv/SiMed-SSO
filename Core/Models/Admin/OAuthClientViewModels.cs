@@ -4,27 +4,23 @@ namespace Core.Models.Admin;
 
 public sealed class OAuthClientListItemViewModel
 {
-    public Guid Id { get; set; }
+    public required string Id { get; set; }
     public required string ClientId { get; set; }
     public required string DisplayName { get; set; }
     public bool IsActive { get; set; }
     public bool RequirePkce { get; set; }
-    public DateTimeOffset CreatedAtUtc { get; set; }
-    public DateTimeOffset UpdatedAtUtc { get; set; }
     public IReadOnlyCollection<string> RedirectUris { get; set; } = [];
     public IReadOnlyCollection<string> Scopes { get; set; } = [];
 }
 
 public sealed class OAuthClientDetailsViewModel
 {
-    public Guid Id { get; set; }
+    public required string Id { get; set; }
     public required string ClientId { get; set; }
     public required string DisplayName { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; }
     public bool RequirePkce { get; set; }
-    public DateTimeOffset CreatedAtUtc { get; set; }
-    public DateTimeOffset UpdatedAtUtc { get; set; }
     public string? CreatedByUserId { get; set; }
     public IReadOnlyCollection<string> RedirectUris { get; set; } = [];
     public IReadOnlyCollection<string> Scopes { get; set; } = [];
@@ -49,7 +45,7 @@ public sealed class OAuthClientCreateViewModel
 
 public sealed class OAuthClientEditViewModel
 {
-    public Guid Id { get; set; }
+    public string? Id { get; set; }
     public string? ClientId { get; set; }
 
     [Required]
@@ -73,4 +69,4 @@ public sealed class OAuthScopeSelectionViewModel
     public bool IsSelected { get; set; }
 }
 
-public sealed record CreatedOAuthClientResult(Guid Id, string ClientId, string ClientSecret);
+public sealed record CreatedOAuthClientResult(string Id, string ClientId, string ClientSecret);

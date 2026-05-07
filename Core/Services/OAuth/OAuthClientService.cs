@@ -1,11 +1,9 @@
 using System.Security.Cryptography;
-using Core.Data;
 using Core.Identity;
-using Core.Models;
 using Core.Models.Admin;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore;
+using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Core.Services.OAuth;
 
@@ -13,118 +11,91 @@ public sealed class OAuthClientService : IOAuthClientService
 {
     private const int ClientIdBytes = 24;
     private const int ClientSecretBytes = 32;
-
-    private readonly ApplicationDbContext _dbContext;
-    private readonly IPasswordHasher<OAuthClient> _passwordHasher;
+    private readonly IOpenIddictApplicationManager _applicationManager;
     private readonly IWebHostEnvironment _environment;
 
     public OAuthClientService(
-        ApplicationDbContext dbContext,
-        IPasswordHasher<OAuthClient> passwordHasher,
+        IOpenIddictApplicationManager applicationManager,
         IWebHostEnvironment environment)
     {
-        _dbContext = dbContext;
-        _passwordHasher = passwordHasher;
+        _applicationManager = applicationManager;
         _environment = environment;
     }
 
     public async Task<IReadOnlyCollection<OAuthClientListItemViewModel>> GetClientsAsync(
         CancellationToken cancellationToken = default)
     {
-        var clients = await _dbContext.Set<OAuthClient>()
-            .AsNoTracking()
-            .Include(client => client.RedirectUris)
-            .Include(client => client.Scopes)
-            .OrderBy(client => client.DisplayName)
-            .ToArrayAsync(cancellationToken);
+        var clients = new List<OAuthClientListItemViewModel>();
+
+        await foreach (var application in _applicationManager.ListAsync(count: null, offset: null, cancellationToken))
+        {
+            var permissions = await _applicationManager.GetPermissionsAsync(application, cancellationToken);
+            clients.Add(new OAuthClientListItemViewModel
+            {
+                Id = await RequireIdAsync(application, cancellationToken),
+                ClientId = await RequireClientIdAsync(application, cancellationToken),
+                DisplayName = await _applicationManager.GetDisplayNameAsync(application, cancellationToken) ?? "Unnamed client",
+                IsActive = IsActive(permissions),
+                RequirePkce = await RequiresPkceAsync(application, cancellationToken),
+                RedirectUris = await GetRedirectUrisAsync(application, cancellationToken),
+                Scopes = GetAllowedScopes(await _applicationManager.GetSettingsAsync(application, cancellationToken), permissions)
+            });
+        }
 
         return clients
-            .Select(client => new OAuthClientListItemViewModel
-            {
-                Id = client.Id,
-                ClientId = client.ClientId,
-                DisplayName = client.DisplayName,
-                IsActive = client.IsActive,
-                RequirePkce = client.RequirePkce,
-                CreatedAtUtc = client.CreatedAtUtc,
-                UpdatedAtUtc = client.UpdatedAtUtc,
-                RedirectUris = client.RedirectUris
-                    .OrderBy(uri => uri.Uri)
-                    .Select(uri => uri.Uri)
-                    .ToArray(),
-                Scopes = client.Scopes
-                    .OrderBy(scope => scope.Scope)
-                    .Select(scope => scope.Scope)
-                    .ToArray()
-            })
+            .OrderBy(client => client.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
     }
 
     public async Task<OAuthClientDetailsViewModel?> GetClientDetailsAsync(
-        Guid id,
+        string id,
         CancellationToken cancellationToken = default)
     {
-        var client = await _dbContext.Set<OAuthClient>()
-            .AsNoTracking()
-            .Include(item => item.RedirectUris)
-            .Include(item => item.Scopes)
-            .Where(item => item.Id == id)
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (client is null)
+        var application = await _applicationManager.FindByIdAsync(id, cancellationToken);
+        if (application is null)
         {
             return null;
         }
 
+        var permissions = await _applicationManager.GetPermissionsAsync(application, cancellationToken);
+        var settings = await _applicationManager.GetSettingsAsync(application, cancellationToken);
+
         return new OAuthClientDetailsViewModel
         {
-            Id = client.Id,
-            ClientId = client.ClientId,
-            DisplayName = client.DisplayName,
-            Description = client.Description,
-            IsActive = client.IsActive,
-            RequirePkce = client.RequirePkce,
-            CreatedAtUtc = client.CreatedAtUtc,
-            UpdatedAtUtc = client.UpdatedAtUtc,
-            CreatedByUserId = client.CreatedByUserId,
-            RedirectUris = client.RedirectUris
-                .OrderBy(uri => uri.Uri)
-                .Select(uri => uri.Uri)
-                .ToArray(),
-            Scopes = client.Scopes
-                .OrderBy(scope => scope.Scope)
-                .Select(scope => scope.Scope)
-                .ToArray()
+            Id = await RequireIdAsync(application, cancellationToken),
+            ClientId = await RequireClientIdAsync(application, cancellationToken),
+            DisplayName = await _applicationManager.GetDisplayNameAsync(application, cancellationToken) ?? "Unnamed client",
+            Description = settings.GetValueOrDefault(OAuthClientSettings.Description),
+            IsActive = IsActive(permissions),
+            RequirePkce = await RequiresPkceAsync(application, cancellationToken),
+            CreatedByUserId = settings.GetValueOrDefault(OAuthClientSettings.CreatedByUserId),
+            RedirectUris = await GetRedirectUrisAsync(application, cancellationToken),
+            Scopes = GetAllowedScopes(settings, permissions)
         };
     }
 
     public async Task<OAuthClientEditViewModel?> GetEditModelAsync(
-        Guid id,
+        string id,
         CancellationToken cancellationToken = default)
     {
-        var client = await _dbContext.Set<OAuthClient>()
-            .AsNoTracking()
-            .Include(item => item.RedirectUris)
-            .Include(item => item.Scopes)
-            .FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
-
-        if (client is null)
+        var application = await _applicationManager.FindByIdAsync(id, cancellationToken);
+        if (application is null)
         {
             return null;
         }
 
-        var selectedScopes = client.Scopes.Select(scope => scope.Scope).ToHashSet(StringComparer.Ordinal);
+        var permissions = await _applicationManager.GetPermissionsAsync(application, cancellationToken);
+        var settings = await _applicationManager.GetSettingsAsync(application, cancellationToken);
+
         return new OAuthClientEditViewModel
         {
-            Id = client.Id,
-            ClientId = client.ClientId,
-            DisplayName = client.DisplayName,
-            Description = client.Description,
-            RequirePkce = client.RequirePkce,
-            RedirectUrisText = string.Join(Environment.NewLine, client.RedirectUris
-                .OrderBy(uri => uri.Uri)
-                .Select(uri => uri.Uri)),
-            Scopes = CreateScopeSelections(selectedScopes)
+            Id = await RequireIdAsync(application, cancellationToken),
+            ClientId = await RequireClientIdAsync(application, cancellationToken),
+            DisplayName = await _applicationManager.GetDisplayNameAsync(application, cancellationToken) ?? string.Empty,
+            Description = settings.GetValueOrDefault(OAuthClientSettings.Description),
+            RequirePkce = await RequiresPkceAsync(application, cancellationToken),
+            RedirectUrisText = string.Join(Environment.NewLine, await GetRedirectUrisAsync(application, cancellationToken)),
+            Scopes = CreateScopeSelections(GetAllowedScopes(settings, permissions))
         };
     }
 
@@ -142,109 +113,115 @@ public sealed class OAuthClientService : IOAuthClientService
         string? createdByUserId,
         CancellationToken cancellationToken = default)
     {
-        var now = DateTimeOffset.UtcNow;
         var clientId = await GenerateUniqueClientIdAsync(cancellationToken);
         var clientSecret = GenerateSecret();
+        var descriptor = CreateDescriptor(
+            clientId,
+            clientSecret,
+            model.DisplayName,
+            model.Description,
+            model.RequirePkce,
+            ParseRedirectUris(model.RedirectUrisText),
+            GetSelectedScopes(model.Scopes),
+            createdByUserId);
 
-        var client = new OAuthClient
-        {
-            ClientId = clientId,
-            ClientSecretHash = string.Empty,
-            DisplayName = model.DisplayName.Trim(),
-            Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description.Trim(),
-            IsActive = true,
-            RequirePkce = model.RequirePkce,
-            CreatedAtUtc = now,
-            UpdatedAtUtc = now,
-            CreatedByUserId = createdByUserId
-        };
-        client.ClientSecretHash = _passwordHasher.HashPassword(client, clientSecret);
-
-        foreach (var redirectUri in ParseRedirectUris(model.RedirectUrisText))
-        {
-            client.RedirectUris.Add(new OAuthClientRedirectUri
-            {
-                ClientId = client.ClientId,
-                Uri = redirectUri
-            });
-        }
-
-        foreach (var scope in GetSelectedScopes(model.Scopes))
-        {
-            client.Scopes.Add(new OAuthClientScope
-            {
-                ClientId = client.ClientId,
-                Scope = scope
-            });
-        }
-
-        _dbContext.Add(client);
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        return new CreatedOAuthClientResult(client.Id, client.ClientId, clientSecret);
+        var application = await _applicationManager.CreateAsync(descriptor, cancellationToken);
+        return new CreatedOAuthClientResult(
+            await RequireIdAsync(application, cancellationToken),
+            clientId,
+            clientSecret);
     }
 
     public async Task<bool> UpdateClientAsync(
         OAuthClientEditViewModel model,
         CancellationToken cancellationToken = default)
     {
-        var client = await _dbContext.Set<OAuthClient>()
-            .Include(item => item.RedirectUris)
-            .Include(item => item.Scopes)
-            .FirstOrDefaultAsync(item => item.Id == model.Id, cancellationToken);
-
-        if (client is null)
+        if (string.IsNullOrWhiteSpace(model.Id))
         {
             return false;
         }
 
-        client.DisplayName = model.DisplayName.Trim();
-        client.Description = string.IsNullOrWhiteSpace(model.Description) ? null : model.Description.Trim();
-        client.RequirePkce = model.RequirePkce;
-        client.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        var application = await _applicationManager.FindByIdAsync(model.Id, cancellationToken);
+        if (application is null)
+        {
+            return false;
+        }
 
-        UpdateRedirectUris(client, ParseRedirectUris(model.RedirectUrisText));
-        UpdateScopes(client, GetSelectedScopes(model.Scopes));
+        var descriptor = new OpenIddictApplicationDescriptor();
+        await _applicationManager.PopulateAsync(descriptor, application, cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        var isActive = IsActive(descriptor.Permissions);
+        descriptor.DisplayName = model.DisplayName.Trim();
+        descriptor.RedirectUris.Clear();
+        descriptor.Requirements.Clear();
+        descriptor.Permissions.Clear();
+        var selectedScopes = GetSelectedScopes(model.Scopes).ToArray();
+        descriptor.Settings[OAuthClientSettings.Description] = string.IsNullOrWhiteSpace(model.Description)
+            ? string.Empty
+            : model.Description.Trim();
+        descriptor.Settings[OAuthClientSettings.Scopes] = string.Join(" ", selectedScopes);
+
+        foreach (var redirectUri in ParseRedirectUris(model.RedirectUrisText))
+        {
+            descriptor.RedirectUris.Add(new Uri(redirectUri));
+        }
+
+        AddDefaultPermissions(descriptor.Permissions, selectedScopes, isActive);
+        if (model.RequirePkce)
+        {
+            descriptor.Requirements.Add(Requirements.Features.ProofKeyForCodeExchange);
+        }
+
+        await _applicationManager.UpdateAsync(application, descriptor, cancellationToken);
         return true;
     }
 
-    public async Task<bool> SetActiveAsync(Guid id, bool isActive, CancellationToken cancellationToken = default)
+    public async Task<bool> SetActiveAsync(
+        string id,
+        bool isActive,
+        CancellationToken cancellationToken = default)
     {
-        var client = await _dbContext.Set<OAuthClient>()
-            .FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
-
-        if (client is null)
+        var application = await _applicationManager.FindByIdAsync(id, cancellationToken);
+        if (application is null)
         {
             return false;
         }
 
-        client.IsActive = isActive;
-        client.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        var descriptor = new OpenIddictApplicationDescriptor();
+        await _applicationManager.PopulateAsync(descriptor, application, cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
+        if (isActive)
+        {
+            descriptor.Permissions.Add(Permissions.Endpoints.Authorization);
+            descriptor.Permissions.Add(Permissions.Endpoints.Token);
+        }
+        else
+        {
+            descriptor.Permissions.Remove(Permissions.Endpoints.Authorization);
+            descriptor.Permissions.Remove(Permissions.Endpoints.Token);
+        }
+
+        await _applicationManager.UpdateAsync(application, descriptor, cancellationToken);
         return true;
     }
 
     public async Task<CreatedOAuthClientResult?> RotateSecretAsync(
-        Guid id,
+        string id,
         CancellationToken cancellationToken = default)
     {
-        var client = await _dbContext.Set<OAuthClient>()
-            .FirstOrDefaultAsync(item => item.Id == id, cancellationToken);
-
-        if (client is null)
+        var application = await _applicationManager.FindByIdAsync(id, cancellationToken);
+        if (application is null)
         {
             return null;
         }
 
         var clientSecret = GenerateSecret();
-        client.ClientSecretHash = _passwordHasher.HashPassword(client, clientSecret);
-        client.UpdatedAtUtc = DateTimeOffset.UtcNow;
+        await _applicationManager.UpdateAsync(application, clientSecret, cancellationToken);
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        return new CreatedOAuthClientResult(client.Id, client.ClientId, clientSecret);
+        return new CreatedOAuthClientResult(
+            await RequireIdAsync(application, cancellationToken),
+            await RequireClientIdAsync(application, cancellationToken),
+            clientSecret);
     }
 
     public void ValidateClientInput(OAuthClientCreateViewModel model, ModelStateDictionaryAdapter modelState)
@@ -259,21 +236,152 @@ public sealed class OAuthClientService : IOAuthClientService
         ValidateScopes(model.Scopes, "Input.Scopes", modelState);
     }
 
+    private OpenIddictApplicationDescriptor CreateDescriptor(
+        string clientId,
+        string clientSecret,
+        string displayName,
+        string? description,
+        bool requirePkce,
+        IEnumerable<string> redirectUris,
+        IEnumerable<string> scopes,
+        string? createdByUserId)
+    {
+        var descriptor = new OpenIddictApplicationDescriptor
+        {
+            ApplicationType = ApplicationTypes.Web,
+            ClientId = clientId,
+            ClientSecret = clientSecret,
+            ClientType = ClientTypes.Confidential,
+            ConsentType = ConsentTypes.Explicit,
+            DisplayName = displayName.Trim()
+        };
+
+        var selectedScopes = scopes.ToArray();
+        descriptor.Settings[OAuthClientSettings.Description] = string.IsNullOrWhiteSpace(description) ? string.Empty : description.Trim();
+        descriptor.Settings[OAuthClientSettings.CreatedByUserId] = createdByUserId ?? string.Empty;
+        descriptor.Settings[OAuthClientSettings.Scopes] = string.Join(" ", selectedScopes);
+
+        foreach (var redirectUri in redirectUris)
+        {
+            descriptor.RedirectUris.Add(new Uri(redirectUri));
+        }
+
+        AddDefaultPermissions(descriptor.Permissions, selectedScopes, isActive: true);
+        if (requirePkce)
+        {
+            descriptor.Requirements.Add(Requirements.Features.ProofKeyForCodeExchange);
+        }
+
+        return descriptor;
+    }
+
     private async Task<string> GenerateUniqueClientIdAsync(CancellationToken cancellationToken)
     {
         for (var attempt = 0; attempt < 5; attempt++)
         {
             var clientId = $"simed_{GenerateToken(ClientIdBytes)}";
-            var exists = await _dbContext.Set<OAuthClient>()
-                .AnyAsync(client => client.ClientId == clientId, cancellationToken);
-
-            if (!exists)
+            if (await _applicationManager.FindByClientIdAsync(clientId, cancellationToken) is null)
             {
                 return clientId;
             }
         }
 
         throw new InvalidOperationException("Unable to generate a unique OAuth client id.");
+    }
+
+    private static void AddDefaultPermissions(
+        ISet<string> permissions,
+        IEnumerable<string> scopes,
+        bool isActive)
+    {
+        if (isActive)
+        {
+            permissions.Add(Permissions.Endpoints.Authorization);
+            permissions.Add(Permissions.Endpoints.Token);
+        }
+
+        permissions.Add(Permissions.GrantTypes.AuthorizationCode);
+        permissions.Add(Permissions.GrantTypes.RefreshToken);
+        permissions.Add(Permissions.ResponseTypes.Code);
+
+        foreach (var scope in scopes)
+        {
+            switch (scope)
+            {
+                case OAuthScopes.Email:
+                    permissions.Add(Permissions.Scopes.Email);
+                    break;
+                case OAuthScopes.Profile:
+                    permissions.Add(Permissions.Scopes.Profile);
+                    break;
+            }
+        }
+    }
+
+    private static bool IsActive(IEnumerable<string> permissions)
+    {
+        var set = permissions.ToHashSet(StringComparer.Ordinal);
+        return set.Contains(Permissions.Endpoints.Authorization) &&
+               set.Contains(Permissions.Endpoints.Token);
+    }
+
+    private async Task<bool> RequiresPkceAsync(object application, CancellationToken cancellationToken)
+    {
+        var requirements = await _applicationManager.GetRequirementsAsync(application, cancellationToken);
+        return requirements.Contains(Requirements.Features.ProofKeyForCodeExchange, StringComparer.Ordinal);
+    }
+
+    private async Task<IReadOnlyCollection<string>> GetRedirectUrisAsync(
+        object application,
+        CancellationToken cancellationToken)
+    {
+        var redirectUris = await _applicationManager.GetRedirectUrisAsync(application, cancellationToken);
+        return redirectUris
+            .OrderBy(uri => uri, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private static IReadOnlyCollection<string> GetAllowedScopes(
+        IReadOnlyDictionary<string, string> settings,
+        IEnumerable<string> permissions)
+    {
+        if (settings.TryGetValue(OAuthClientSettings.Scopes, out var configuredScopes) &&
+            !string.IsNullOrWhiteSpace(configuredScopes))
+        {
+            return configuredScopes
+                .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(scope => scope, StringComparer.Ordinal)
+                .ToArray();
+        }
+
+        var set = permissions.ToHashSet(StringComparer.Ordinal);
+        var scopes = new List<string> { OAuthScopes.OpenId };
+        if (set.Contains(Permissions.Scopes.Profile))
+        {
+            scopes.Add(OAuthScopes.Profile);
+        }
+
+        if (set.Contains(Permissions.Scopes.Email))
+        {
+            scopes.Add(OAuthScopes.Email);
+        }
+
+        return scopes
+            .OrderBy(scope => scope, StringComparer.Ordinal)
+            .ToArray();
+    }
+
+    private async Task<string> RequireIdAsync(object application, CancellationToken cancellationToken)
+    {
+        return await _applicationManager.GetIdAsync(application, cancellationToken)
+               ?? throw new InvalidOperationException("OpenIddict application id was not found.");
+    }
+
+    private async Task<string> RequireClientIdAsync(object application, CancellationToken cancellationToken)
+    {
+        return await _applicationManager.GetClientIdAsync(application, cancellationToken)
+               ?? throw new InvalidOperationException("OpenIddict client id was not found.");
     }
 
     private static string GenerateSecret() => GenerateToken(ClientSecretBytes);
@@ -351,46 +459,6 @@ public sealed class OAuthClientService : IOAuthClientService
             .Select(scope => scope.Scope)
             .Distinct(StringComparer.Ordinal)
             .OrderBy(scope => scope, StringComparer.Ordinal);
-    }
-
-    private static void UpdateRedirectUris(OAuthClient client, IEnumerable<string> redirectUris)
-    {
-        var next = redirectUris.ToHashSet(StringComparer.Ordinal);
-        var existing = client.RedirectUris.Select(item => item.Uri).ToHashSet(StringComparer.Ordinal);
-
-        foreach (var redirectUri in client.RedirectUris.Where(item => !next.Contains(item.Uri)).ToArray())
-        {
-            client.RedirectUris.Remove(redirectUri);
-        }
-
-        foreach (var redirectUri in next.Except(existing, StringComparer.Ordinal))
-        {
-            client.RedirectUris.Add(new OAuthClientRedirectUri
-            {
-                ClientId = client.ClientId,
-                Uri = redirectUri
-            });
-        }
-    }
-
-    private static void UpdateScopes(OAuthClient client, IEnumerable<string> scopes)
-    {
-        var next = scopes.ToHashSet(StringComparer.Ordinal);
-        var existing = client.Scopes.Select(item => item.Scope).ToHashSet(StringComparer.Ordinal);
-
-        foreach (var scope in client.Scopes.Where(item => !next.Contains(item.Scope)).ToArray())
-        {
-            client.Scopes.Remove(scope);
-        }
-
-        foreach (var scope in next.Except(existing, StringComparer.Ordinal))
-        {
-            client.Scopes.Add(new OAuthClientScope
-            {
-                ClientId = client.ClientId,
-                Scope = scope
-            });
-        }
     }
 
     private static List<OAuthScopeSelectionViewModel> CreateScopeSelections(IEnumerable<string> selectedScopes)

@@ -1,0 +1,40 @@
+@page "/connect/authorize"
+@model AuthorizeModel
+
+@{
+    ViewData["Title"] = "Authorize application";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-7">
+        <h1 class="h3 mb-3">Authorize application</h1>
+        <p class="text-muted">@Model.ApplicationName wants to access your SiMed SSO account.</p>
+
+        <form method="post">
+            @foreach (var parameter in Model.AuthorizationParameters)
+            {
+                <input type="hidden" name="@parameter.Key" value="@parameter.Value" />
+            }
+
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <dl class="row">
+                <dt class="col-sm-3">Client ID</dt>
+                <dd class="col-sm-9"><code>@Model.ClientId</code></dd>
+
+                <dt class="col-sm-3">Scopes</dt>
+                <dd class="col-sm-9">
+                    @foreach (var scope in Model.Scopes)
+                    {
+                        <span class="badge text-bg-secondary me-1">@scope</span>
+                    }
+                </dd>
+            </dl>
+
+            <div class="d-flex gap-2">
+                <button type="submit" name="submit" value="Accept" class="btn btn-primary">Allow</button>
+                <button type="submit" name="submit" value="Deny" class="btn btn-outline-danger">Deny</button>
+            </div>
+        </form>
+    </div>
+</div>

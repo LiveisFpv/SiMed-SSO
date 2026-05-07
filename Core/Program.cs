@@ -9,6 +9,7 @@ using Core.Services.Sessions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Core.Utils;
+using OpenIddict.Abstractions;
 
 DbUtils.LoadDotEnv();
 
@@ -29,6 +30,12 @@ if (!builder.Environment.IsDevelopment() && !smtpOptions.IsConfigured)
         "SMTP settings were not found. Set SMTP_HOST, SMTP_PORT, FROM_EMAIL and optional SMTP_USERNAME/SMTP_PASSWORD.");
 }
 
+var issuer = builder.Configuration["SSO_ISSUER"];
+if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(issuer))
+{
+    throw new InvalidOperationException("OIDC issuer was not configured. Set SSO_ISSUER in non-Development environments.");
+}
+
 builder.Services.AddSingleton(smtpOptions);
 builder.Services.AddTransient<IApplicationEmailSender>(services =>
     smtpOptions.IsConfigured
@@ -40,10 +47,13 @@ builder.Services.AddTransient<Microsoft.AspNetCore.Identity.IEmailSender<Applica
 builder.Services.AddScoped<IUserSessionService, UserSessionService>();
 builder.Services.AddHostedService<UserSessionCleanupService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
-builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();
+builder.Services.AddScoped<OAuthClaimsPrincipalFactory>();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options=>
-    options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+{
+    options.UseNpgsql(connectionString);
+    options.UseOpenIddict();
+});
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
@@ -65,6 +75,58 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddSignInManager<ApplicationSignInManager>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddOpenIddict()
+    .AddCore(options =>
+    {
+        options.UseEntityFrameworkCore()
+            .UseDbContext<ApplicationDbContext>();
+    })
+    .AddServer(options =>
+    {
+        options.SetAuthorizationEndpointUris("/connect/authorize")
+            .SetTokenEndpointUris("/connect/token");
+
+        options.AllowAuthorizationCodeFlow()
+            .RequireProofKeyForCodeExchange()
+            .AllowRefreshTokenFlow();
+
+        options.SetAuthorizationCodeLifetime(TimeSpan.FromMinutes(5));
+        options.SetAccessTokenLifetime(TimeSpan.FromHours(1));
+        options.SetRefreshTokenLifetime(TimeSpan.FromDays(30));
+
+        options.RegisterScopes(
+            OpenIddictConstants.Scopes.OpenId,
+            OpenIddictConstants.Scopes.Profile,
+            OpenIddictConstants.Scopes.Email,
+            OpenIddictConstants.Scopes.OfflineAccess);
+
+        if (!string.IsNullOrWhiteSpace(issuer))
+        {
+            options.SetIssuer(new Uri(issuer));
+        }
+
+        if (builder.Environment.IsDevelopment())
+        {
+            options.AddDevelopmentEncryptionCertificate()
+                .AddDevelopmentSigningCertificate();
+        }
+        else
+        {
+            throw new InvalidOperationException(
+                "OIDC signing/encryption certificates are not configured for non-Development environments.");
+        }
+
+        var aspNetCore = options.UseAspNetCore()
+            .EnableAuthorizationEndpointPassthrough()
+            .EnableTokenEndpointPassthrough()
+            .EnableStatusCodePagesIntegration();
+
+        if (builder.Environment.IsDevelopment())
+        {
+            aspNetCore.DisableTransportSecurityRequirement();
+        }
+    });
 
 builder.Services.ConfigureApplicationCookie(options =>
 {

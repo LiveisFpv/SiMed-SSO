@@ -19,7 +19,7 @@ public class DetailsModel : PageModel
 
     public OAuthClientDetailsViewModel Client { get; private set; } = null!;
 
-    public async Task<IActionResult> OnGetAsync(Guid id)
+    public async Task<IActionResult> OnGetAsync(string id)
     {
         var client = await _clients.GetClientDetailsAsync(id, HttpContext.RequestAborted);
         if (client is null)
@@ -31,7 +31,7 @@ public class DetailsModel : PageModel
         return Page();
     }
 
-    public async Task<IActionResult> OnPostDeactivateAsync(Guid id)
+    public async Task<IActionResult> OnPostDeactivateAsync(string id)
     {
         if (!await _clients.SetActiveAsync(id, isActive: false, HttpContext.RequestAborted))
         {
@@ -42,7 +42,7 @@ public class DetailsModel : PageModel
         return RedirectToPage(new { id });
     }
 
-    public async Task<IActionResult> OnPostReactivateAsync(Guid id)
+    public async Task<IActionResult> OnPostReactivateAsync(string id)
     {
         if (!await _clients.SetActiveAsync(id, isActive: true, HttpContext.RequestAborted))
         {
@@ -53,7 +53,7 @@ public class DetailsModel : PageModel
         return RedirectToPage(new { id });
     }
 
-    public async Task<IActionResult> OnPostRotateSecretAsync(Guid id)
+    public async Task<IActionResult> OnPostRotateSecretAsync(string id)
     {
         var result = await _clients.RotateSecretAsync(id, HttpContext.RequestAborted);
         if (result is null)

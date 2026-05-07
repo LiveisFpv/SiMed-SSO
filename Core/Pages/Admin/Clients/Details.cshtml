@@ -67,11 +67,8 @@
         }
     </dd>
 
-    <dt class="col-sm-3">Created</dt>
-    <dd class="col-sm-9">@Model.Client.CreatedAtUtc.ToString("u")</dd>
-
-    <dt class="col-sm-3">Updated</dt>
-    <dd class="col-sm-9">@Model.Client.UpdatedAtUtc.ToString("u")</dd>
+    <dt class="col-sm-3">Created by user</dt>
+    <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Client.CreatedByUserId) ? "Unknown" : Model.Client.CreatedByUserId)</dd>
 </dl>
 
 <div class="border-top pt-3 d-flex gap-2">
