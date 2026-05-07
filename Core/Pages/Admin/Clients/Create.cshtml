@@ -1,0 +1,59 @@
+@page
+@model CreateModel
+
+@{
+    ViewData["Title"] = "Create OAuth client";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Create OAuth client</h1>
+        <p class="text-muted mb-0">Register a confidential application client.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
+</div>
+
+<form method="post">
+    <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+    <div class="mb-3">
+        <label asp-for="Input.DisplayName" class="form-label"></label>
+        <input asp-for="Input.DisplayName" class="form-control" />
+        <span asp-validation-for="Input.DisplayName" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.Description" class="form-label"></label>
+        <textarea asp-for="Input.Description" class="form-control" rows="3"></textarea>
+        <span asp-validation-for="Input.Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.RedirectUrisText" class="form-label"></label>
+        <textarea asp-for="Input.RedirectUrisText" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="Input.RedirectUrisText" class="text-danger"></span>
+    </div>
+
+    <div class="form-check mb-3">
+        <input asp-for="Input.RequirePkce" class="form-check-input" />
+        <label asp-for="Input.RequirePkce" class="form-check-label">Require PKCE</label>
+    </div>
+
+    <fieldset class="mb-4">
+        <legend class="h6">Scopes</legend>
+        @for (var i = 0; i < Model.Input.Scopes.Count; i++)
+        {
+            <div class="form-check">
+                <input asp-for="Input.Scopes[i].IsSelected" class="form-check-input" />
+                <input asp-for="Input.Scopes[i].Scope" type="hidden" />
+                <label class="form-check-label" asp-for="Input.Scopes[i].IsSelected">@Model.Input.Scopes[i].Scope</label>
+            </div>
+        }
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary">Create client</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

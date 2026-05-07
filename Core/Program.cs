@@ -4,6 +4,7 @@ using Core.Middleware;
 using Core.Models;
 using Core.Options;
 using Core.Services.Email;
+using Core.Services.OAuth;
 using Core.Services.Sessions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -38,6 +39,8 @@ builder.Services.AddTransient<Microsoft.AspNetCore.Identity.IEmailSender<Applica
     services.GetRequiredService<IdentityEmailSender>());
 builder.Services.AddScoped<IUserSessionService, UserSessionService>();
 builder.Services.AddHostedService<UserSessionCleanupService>();
+builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
+builder.Services.AddScoped<IPasswordHasher<OAuthClient>, PasswordHasher<OAuthClient>>();
 
 builder.Services.AddDbContext<ApplicationDbContext>(options=>
     options.UseNpgsql(connectionString));
