@@ -46,6 +46,5 @@ SiMed-SSO - SSO-сервис для интеграции внутренних и
 - [x] Production-настройка signing/encryption certificates
 - [x] MFA
 - [x] Подробная документация API
-- [x] Русский UI и документация
 - [ ] Audit log
 - [ ] Клиентское приложение как пример интеграции
