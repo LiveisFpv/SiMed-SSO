@@ -66,7 +66,7 @@ public class LoginWith2faModel : PageModel
         if (!isValid)
         {
             await RecordFailedTwoFactorAttemptAsync(user);
-            ModelState.AddModelError(string.Empty, "Invalid authenticator code.");
+            ModelState.AddModelError(string.Empty, "Неверный код из приложения-аутентификатора.");
             return Page();
         }
 

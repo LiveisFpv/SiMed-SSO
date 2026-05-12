@@ -42,7 +42,7 @@ public class AuthorizeModel : PageModel
         {
             return ForbidWithOpenIddictError(
                 Errors.InvalidScope,
-                "The requested scope is not allowed for this client application.");
+                "Запрошенный scope не разрешен для этого client application.");
         }
 
         await LoadAsync(request);
@@ -56,31 +56,31 @@ public class AuthorizeModel : PageModel
         {
             return ForbidWithOpenIddictError(
                 Errors.InvalidScope,
-                "The requested scope is not allowed for this client application.");
+                "Запрошенный scope не разрешен для этого client application.");
         }
 
         if (string.Equals(submit, "Deny", StringComparison.Ordinal))
         {
             return ForbidWithOpenIddictError(
                 Errors.AccessDenied,
-                "The authorization request was denied by the user.");
+                "Пользователь отклонил authorization request.");
         }
 
         if (!string.Equals(submit, "Accept", StringComparison.Ordinal))
         {
             await LoadAsync(request);
-            ModelState.AddModelError(string.Empty, "Invalid consent action.");
+            ModelState.AddModelError(string.Empty, "Неверное действие на странице consent.");
             return Page();
         }
 
         var user = await _userManager.GetUserAsync(User)
-            ?? throw new InvalidOperationException("Current user was not found.");
+            ?? throw new InvalidOperationException("Текущий пользователь не найден.");
 
         if (!user.IsActive)
         {
             return ForbidWithOpenIddictError(
                 Errors.LoginRequired,
-                "The user is no longer allowed to sign in.");
+                "Пользователю больше не разрешен вход.");
         }
 
         var principal = await _principalFactory.CreateAsync(user, request.GetScopes());
@@ -99,8 +99,8 @@ public class AuthorizeModel : PageModel
 
         var application = await _applicationManager.FindByClientIdAsync(request.ClientId ?? string.Empty, HttpContext.RequestAborted);
         ApplicationName = application is null
-            ? request.ClientId ?? "Unknown application"
-            : await _applicationManager.GetDisplayNameAsync(application, HttpContext.RequestAborted) ?? request.ClientId ?? "Unknown application";
+            ? request.ClientId ?? "Неизвестное приложение"
+            : await _applicationManager.GetDisplayNameAsync(application, HttpContext.RequestAborted) ?? request.ClientId ?? "Неизвестное приложение";
     }
 
     private async Task<bool> HasAllowedScopesAsync(OpenIddictRequest request)

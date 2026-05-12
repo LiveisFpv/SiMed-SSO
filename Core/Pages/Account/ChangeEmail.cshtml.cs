@@ -44,7 +44,7 @@ public class ChangeEmailModel : PageModel
 
         if (string.Equals(user.Email, Input.NewEmail, StringComparison.OrdinalIgnoreCase))
         {
-            TempData["StatusMessage"] = "Email is unchanged.";
+            TempData["StatusMessage"] = "Email не изменился.";
             return RedirectToPage("/Account/Manage");
         }
 
@@ -57,14 +57,14 @@ public class ChangeEmailModel : PageModel
 
         await _emailSender.SendConfirmationLinkAsync(user, Input.NewEmail, callbackUrl ?? string.Empty);
 
-        TempData["StatusMessage"] = "Confirmation link was sent to the new email.";
+        TempData["StatusMessage"] = "Ссылка подтверждения отправлена на новый email.";
         return RedirectToPage("/Account/Manage");
     }
 
     private async Task<ApplicationUser> GetCurrentUserAsync()
     {
         var user = await _userManager.GetUserAsync(User);
-        return user ?? throw new InvalidOperationException("Current user was not found.");
+        return user ?? throw new InvalidOperationException("Текущий пользователь не найден.");
     }
 
     private static string EncodeToken(string token) =>

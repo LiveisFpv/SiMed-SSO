@@ -1,10 +1,10 @@
-# API Reference
+# API reference
 
 Этот документ описывает публичный OIDC/OAuth2 contract SiMed SSO для интеграторов клиентских систем.
 
 Админ-панель и account pages являются server-rendered Razor Pages и не считаются публичным API. Для машинной проверки OIDC используйте discovery metadata.
 
-## Base URL and issuer
+## Base URL и issuer
 
 Локальный HTTPS issuer:
 
@@ -128,7 +128,7 @@ Response claims зависят от scopes:
 | `email` | `email` | User email. |
 | `email_verified` | `email` | Email confirmation state. |
 
-Inactive/deleted users are rejected.
+Inactive/deleted users отклоняются.
 
 ## Scopes
 
@@ -139,7 +139,7 @@ Inactive/deleted users are rejected.
 | `email` | Enables email claims. |
 | `offline_access` | Enables refresh token issuance. |
 
-Scopes must be enabled for the client in `/Admin/Clients`.
+Scopes должны быть разрешены для client в `/Admin/Clients`.
 
 ## Token lifetimes
 
@@ -172,4 +172,4 @@ Raw OpenAPI YAML in Development:
 https://localhost:7269/openapi/simed-sso.yaml
 ```
 
-Swagger UI is intentionally Development-only. For production integration, use discovery metadata and the Markdown docs in this repository.
+Swagger UI намеренно доступен только в `Development`. Для production-интеграции используйте discovery metadata и Markdown-документацию в репозитории.

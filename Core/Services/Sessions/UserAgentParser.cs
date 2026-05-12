@@ -6,7 +6,7 @@ public static class UserAgentParser
     {
         if (string.IsNullOrWhiteSpace(userAgent))
         {
-            return new ParsedUserAgent("Unknown", "Unknown", "Unknown");
+            return new ParsedUserAgent("Неизвестно", "Неизвестно", "Неизвестно");
         }
 
         var browser = ParseBrowser(userAgent);
@@ -39,7 +39,7 @@ public static class UserAgentParser
             return "Safari";
         }
 
-        return "Unknown";
+        return "Неизвестно";
     }
 
     private static string ParseOperatingSystem(string userAgent)
@@ -72,7 +72,7 @@ public static class UserAgentParser
             return "Linux";
         }
 
-        return "Unknown";
+        return "Неизвестно";
     }
 
     private static string ParseDevice(string userAgent)
@@ -80,23 +80,23 @@ public static class UserAgentParser
         if (userAgent.Contains("iPad", StringComparison.OrdinalIgnoreCase) ||
             userAgent.Contains("Tablet", StringComparison.OrdinalIgnoreCase))
         {
-            return "Tablet";
+            return "Планшет";
         }
 
         if (userAgent.Contains("Mobile", StringComparison.OrdinalIgnoreCase) ||
             userAgent.Contains("Android", StringComparison.OrdinalIgnoreCase) ||
             userAgent.Contains("iPhone", StringComparison.OrdinalIgnoreCase))
         {
-            return "Mobile";
+            return "Мобильное";
         }
 
         if (userAgent.Contains("Windows", StringComparison.OrdinalIgnoreCase) ||
             userAgent.Contains("Macintosh", StringComparison.OrdinalIgnoreCase) ||
             userAgent.Contains("Linux", StringComparison.OrdinalIgnoreCase))
         {
-            return "Desktop";
+            return "Компьютер";
         }
 
-        return "Unknown";
+        return "Неизвестно";
     }
 }

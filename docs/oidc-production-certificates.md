@@ -1,11 +1,11 @@
-# Production OIDC Certificates
+# Production OIDC certificates
 
 Этот документ описывает настройку signing/encryption certificates для OpenIddict вне `Development`.
 
 В `Development` приложение использует development certificates OpenIddict. Для `Staging` и `Production` нужно явно указать два `.pfx` файла:
 
-- signing certificate — подписывает токены и metadata keys;
-- encryption certificate — шифрует токены, если формат токена требует encryption.
+- signing certificate - подписывает токены и metadata keys;
+- encryption certificate - шифрует токены, если формат токена требует encryption.
 
 Dev-сертификаты нельзя использовать в production.
 
@@ -19,7 +19,7 @@ OIDC_ENCRYPTION_CERT_PATH=certs/oidc-encryption.pfx
 OIDC_ENCRYPTION_CERT_PASSWORD=change-this-encryption-password
 ```
 
-`SSO_ISSUER` должен совпадать с публичным URL сервера, который видят OAuth/OIDC-клиенты. Значение issuer в discovery metadata и `iss` в `id_token` должны совпадать.
+`SSO_ISSUER` должен совпадать с публичным URL сервера, который видят OAuth/OIDC clients. Значение issuer в discovery metadata и `iss` в `id_token` должны совпадать.
 
 Пути к сертификатам могут быть абсолютными или относительными к корню приложения.
 

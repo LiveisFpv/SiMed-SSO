@@ -1,4 +1,4 @@
-# OIDC Quickstart
+# OIDC quickstart
 
 Этот документ описывает ручную проверку OpenID Connect/OAuth2-интеграции SiMed-SSO через `curl.exe` и браузер.
 
@@ -31,7 +31,7 @@ curl.exe -k https://localhost:7269/connect/userinfo `
   -H "Authorization: Bearer ACCESS_TOKEN"
 ```
 
-## Создание клиента
+## Создание client
 
 1. Войдите под администратором.
 2. Откройте `/Admin/Clients`.
@@ -51,7 +51,7 @@ openid profile email offline_access
 
 Скопируйте `Client ID` и `Client secret` сразу после создания. Secret показывается только один раз.
 
-## Authorization Code Flow With PKCE
+## Authorization Code Flow with PKCE
 
 Создайте `code_verifier` и `code_challenge`:
 
@@ -78,7 +78,7 @@ https://localhost:7269/connect/authorize?client_id=CLIENT_ID&response_type=code&
 http://localhost:3000/callback?code=AUTHORIZATION_CODE&iss=https%3A%2F%2Flocalhost%3A7269%2F
 ```
 
-Брать нужно только:
+Использовать нужно только:
 
 ```text
 AUTHORIZATION_CODE
@@ -137,5 +137,5 @@ curl.exe -k https://localhost:7269/connect/userinfo `
 - `invalid_request`, отсутствует `client_id`: начните browser flow заново с полного authorize URL.
 - `invalid_grant`, неверный `code_verifier`: получите новый authorization code с той же парой verifier/challenge.
 - `invalid_grant`, token no longer valid: authorization code одноразовый, начните flow заново.
-- `invalid_request`, redirect URI mismatch: `redirect_uri` должен точно совпадать с URI в настройках клиента.
+- `invalid_request`, redirect URI mismatch: `redirect_uri` должен точно совпадать с URI в настройках client.
 - issuer mismatch: значения `.env` `SSO_ISSUER`, discovery `issuer` и token `iss` должны совпадать.

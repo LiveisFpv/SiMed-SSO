@@ -73,6 +73,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         // options.Tokens.PasswordResetTokenProvider=
         // options.ClaimsIdentity.RoleClaimType=
     })
+    .AddErrorDescriber<RussianIdentityErrorDescriber>()
     .AddSignInManager<ApplicationSignInManager>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();

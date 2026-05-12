@@ -39,7 +39,7 @@ public class ManageModel : PageModel
         var user = await GetCurrentUserAsync();
         await _userSessionService.RevokeAllUserSessionsAsync(
             user,
-            "User requested sign out everywhere.",
+            "Пользователь запросил выход на всех устройствах.",
             user.Id);
         await _signInManager.SignOutAsync();
         return RedirectToPage("/Account/Login");
@@ -66,6 +66,6 @@ public class ManageModel : PageModel
     private async Task<ApplicationUser> GetCurrentUserAsync()
     {
         var user = await _userManager.GetUserAsync(User);
-        return user ?? throw new InvalidOperationException("Current user was not found.");
+        return user ?? throw new InvalidOperationException("Текущий пользователь не найден.");
     }
 }

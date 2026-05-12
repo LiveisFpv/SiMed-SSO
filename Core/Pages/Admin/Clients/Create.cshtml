@@ -2,15 +2,15 @@
 @model CreateModel
 
 @{
-    ViewData["Title"] = "Create OAuth client";
+    ViewData["Title"] = "Создание OAuth client";
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h1 class="h3 mb-1">Create OAuth client</h1>
-        <p class="text-muted mb-0">Register a confidential application client.</p>
+        <h1 class="h3 mb-1">Создание OAuth client</h1>
+        <p class="text-muted mb-0">Регистрация confidential client для приложения.</p>
     </div>
-    <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
+    <a class="btn btn-outline-secondary" asp-page="./Index">Назад</a>
 </div>
 
 <form method="post">
@@ -36,7 +36,7 @@
 
     <div class="form-check mb-3">
         <input asp-for="Input.RequirePkce" class="form-check-input" />
-        <label asp-for="Input.RequirePkce" class="form-check-label">Require PKCE</label>
+        <label asp-for="Input.RequirePkce" class="form-check-label">Требовать PKCE</label>
     </div>
 
     <fieldset class="mb-4">
@@ -51,7 +51,7 @@
         }
     </fieldset>
 
-    <button type="submit" class="btn btn-primary">Create client</button>
+    <button type="submit" class="btn btn-primary">Создать client</button>
 </form>
 
 @section Scripts {

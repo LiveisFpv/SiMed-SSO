@@ -50,7 +50,7 @@ public class EditRolesModel : PageModel
 
         if (user.Id == _userManager.GetUserId(User) && !selectedRoles.Contains(ApplicationRoles.Admin))
         {
-            ModelState.AddModelError(string.Empty, "You cannot remove the Admin role from your own account.");
+            ModelState.AddModelError(string.Empty, "Нельзя убрать роль Admin у собственного аккаунта.");
             Input = await BuildEditRolesViewModelAsync(user, selectedRoles);
             return Page();
         }
@@ -87,7 +87,7 @@ public class EditRolesModel : PageModel
 
         await _userManager.UpdateSecurityStampAsync(user);
 
-        TempData["StatusMessage"] = "User roles were updated.";
+        TempData["StatusMessage"] = "Роли пользователя обновлены.";
         return RedirectToPage("./Details", new { id = user.Id });
     }
 

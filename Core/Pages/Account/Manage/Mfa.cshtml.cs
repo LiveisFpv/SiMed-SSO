@@ -67,7 +67,7 @@ public class MfaModel : PageModel
 
         if (!isValid)
         {
-            ModelState.AddModelError("EnableInput.VerificationCode", "Invalid authenticator code.");
+            ModelState.AddModelError("EnableInput.VerificationCode", "Неверный код из приложения-аутентификатора.");
             await LoadAsync(user);
             return Page();
         }
@@ -83,7 +83,7 @@ public class MfaModel : PageModel
         var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
         RecoveryCodes = recoveryCodes?.ToArray() ?? [];
         await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
-        TempData["StatusMessage"] = "MFA was enabled. Save your recovery codes now.";
+        TempData["StatusMessage"] = "MFA включена. Сохраните recovery codes сейчас.";
         await LoadAsync(user);
         return Page();
     }
@@ -98,7 +98,7 @@ public class MfaModel : PageModel
 
         var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
         RecoveryCodes = recoveryCodes?.ToArray() ?? [];
-        TempData["StatusMessage"] = "New recovery codes were generated. Save them now.";
+        TempData["StatusMessage"] = "Новые recovery codes сгенерированы. Сохраните их сейчас.";
         await LoadAsync(user);
         return Page();
     }
@@ -122,7 +122,7 @@ public class MfaModel : PageModel
 
         await _signInManager.ForgetTwoFactorClientAsync();
         await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
-        TempData["StatusMessage"] = "MFA was disabled.";
+        TempData["StatusMessage"] = "MFA отключена.";
         return RedirectToPage();
     }
 
@@ -139,7 +139,7 @@ public class MfaModel : PageModel
         await _userManager.ResetAuthenticatorKeyAsync(user);
         await _signInManager.ForgetTwoFactorClientAsync();
         await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
-        TempData["StatusMessage"] = "Authenticator key was reset. Configure MFA again to enable it.";
+        TempData["StatusMessage"] = "Authenticator key сброшен. Настройте MFA заново, чтобы включить ее.";
         return RedirectToPage();
     }
 
@@ -179,14 +179,14 @@ public class MfaModel : PageModel
             return true;
         }
 
-        ModelState.AddModelError("PasswordInput.CurrentPassword", "Invalid password.");
+        ModelState.AddModelError("PasswordInput.CurrentPassword", "Неверный пароль.");
         return false;
     }
 
     private async Task<ApplicationUser> GetCurrentUserAsync()
     {
         var user = await _userManager.GetUserAsync(User);
-        return user ?? throw new InvalidOperationException("Current user was not found.");
+        return user ?? throw new InvalidOperationException("Текущий пользователь не найден.");
     }
 
     private void AddIdentityErrors(IdentityResult result)

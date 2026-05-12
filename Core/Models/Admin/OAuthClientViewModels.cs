@@ -28,13 +28,16 @@ public sealed class OAuthClientDetailsViewModel
 
 public sealed class OAuthClientCreateViewModel
 {
-    [Required]
-    [StringLength(200)]
+    [Required(ErrorMessage = "Укажите название.")]
+    [StringLength(200, ErrorMessage = "Название должно быть не длиннее {1} символов.")]
+    [Display(Name = "Название")]
     public string DisplayName { get; set; } = string.Empty;
 
-    [StringLength(1000)]
+    [StringLength(1000, ErrorMessage = "Описание должно быть не длиннее {1} символов.")]
+    [Display(Name = "Описание")]
     public string? Description { get; set; }
 
+    [Display(Name = "Требовать PKCE")]
     public bool RequirePkce { get; set; } = true;
 
     [Display(Name = "Redirect URIs")]
@@ -48,13 +51,16 @@ public sealed class OAuthClientEditViewModel
     public string? Id { get; set; }
     public string? ClientId { get; set; }
 
-    [Required]
-    [StringLength(200)]
+    [Required(ErrorMessage = "Укажите название.")]
+    [StringLength(200, ErrorMessage = "Название должно быть не длиннее {1} символов.")]
+    [Display(Name = "Название")]
     public string DisplayName { get; set; } = string.Empty;
 
-    [StringLength(1000)]
+    [StringLength(1000, ErrorMessage = "Описание должно быть не длиннее {1} символов.")]
+    [Display(Name = "Описание")]
     public string? Description { get; set; }
 
+    [Display(Name = "Требовать PKCE")]
     public bool RequirePkce { get; set; } = true;
 
     [Display(Name = "Redirect URIs")]

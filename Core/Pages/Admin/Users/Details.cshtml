@@ -2,17 +2,17 @@
 @model DetailsModel
 
 @{
-    ViewData["Title"] = "User details";
+    ViewData["Title"] = "Детали пользователя";
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h1 class="h3 mb-1">User details</h1>
+        <h1 class="h3 mb-1">Детали пользователя</h1>
         <p class="text-muted mb-0">@Model.UserDetails.Email</p>
     </div>
     <div class="d-flex gap-2">
-        <a class="btn btn-outline-secondary" asp-page="./Index">Back</a>
-        <a class="btn btn-primary" asp-page="./EditRoles" asp-route-id="@Model.UserDetails.Id">Edit roles</a>
+        <a class="btn btn-outline-secondary" asp-page="./Index">Назад</a>
+        <a class="btn btn-primary" asp-page="./EditRoles" asp-route-id="@Model.UserDetails.Id">Изменить роли</a>
     </div>
 </div>
 
@@ -27,13 +27,13 @@
 }
 
 <dl class="row">
-    <dt class="col-sm-3">User name</dt>
+    <dt class="col-sm-3">Имя пользователя</dt>
     <dd class="col-sm-9">@Model.UserDetails.UserName</dd>
 
     <dt class="col-sm-3">Email</dt>
     <dd class="col-sm-9">@Model.UserDetails.Email</dd>
 
-    <dt class="col-sm-3">Roles</dt>
+    <dt class="col-sm-3">Роли</dt>
     <dd class="col-sm-9">
         @if (Model.UserDetails.Roles.Count > 0)
         {
@@ -44,32 +44,32 @@
         }
         else
         {
-            <span class="text-muted">No roles</span>
+            <span class="text-muted">Ролей нет</span>
         }
     </dd>
 
-    <dt class="col-sm-3">Active</dt>
-    <dd class="col-sm-9">@(Model.UserDetails.IsActive ? "Yes" : "No")</dd>
+    <dt class="col-sm-3">Активен</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.IsActive ? "Да" : "Нет")</dd>
 
-    <dt class="col-sm-3">Locked out</dt>
-    <dd class="col-sm-9">@(Model.UserDetails.IsLockedOut ? $"Yes, until {Model.UserDetails.LockoutEnd:u}" : "No")</dd>
+    <dt class="col-sm-3">Заблокирован</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.IsLockedOut ? $"Да, до {Model.UserDetails.LockoutEnd:u}" : "Нет")</dd>
 
-    <dt class="col-sm-3">Email confirmed</dt>
-    <dd class="col-sm-9">@(Model.UserDetails.EmailConfirmed ? "Yes" : "No")</dd>
+    <dt class="col-sm-3">Email подтвержден</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.EmailConfirmed ? "Да" : "Нет")</dd>
 
-    <dt class="col-sm-3">Phone</dt>
-    <dd class="col-sm-9">@(Model.UserDetails.PhoneNumber ?? "Not set")</dd>
+    <dt class="col-sm-3">Телефон</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.PhoneNumber ?? "Не задан")</dd>
 
-    <dt class="col-sm-3">Phone confirmed</dt>
-    <dd class="col-sm-9">@(Model.UserDetails.PhoneNumberConfirmed ? "Yes" : "No")</dd>
+    <dt class="col-sm-3">Телефон подтвержден</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.PhoneNumberConfirmed ? "Да" : "Нет")</dd>
 
-    <dt class="col-sm-3">Two-factor enabled</dt>
-    <dd class="col-sm-9">@(Model.UserDetails.TwoFactorEnabled ? "Yes" : "No")</dd>
+    <dt class="col-sm-3">MFA включена</dt>
+    <dd class="col-sm-9">@(Model.UserDetails.TwoFactorEnabled ? "Да" : "Нет")</dd>
 
-    <dt class="col-sm-3">Failed access count</dt>
+    <dt class="col-sm-3">Неудачных попыток входа</dt>
     <dd class="col-sm-9">@Model.UserDetails.AccessFailedCount</dd>
 
-    <dt class="col-sm-3">Created</dt>
+    <dt class="col-sm-3">Создан</dt>
     <dd class="col-sm-9">@Model.UserDetails.CreatedAtUtc.ToString("u")</dd>
 </dl>
 
@@ -77,28 +77,28 @@
     @if (Model.UserDetails.IsActive)
     {
         <form method="post" asp-page-handler="Deactivate" asp-route-id="@Model.UserDetails.Id">
-            <button type="submit" class="btn btn-danger" disabled="@Model.UserDetails.IsCurrentUser">Deactivate user</button>
+            <button type="submit" class="btn btn-danger" disabled="@Model.UserDetails.IsCurrentUser">Деактивировать пользователя</button>
         </form>
     }
     else
     {
         <form method="post" asp-page-handler="Reactivate" asp-route-id="@Model.UserDetails.Id">
-            <button type="submit" class="btn btn-success">Reactivate user</button>
+            <button type="submit" class="btn btn-success">Реактивировать пользователя</button>
         </form>
     }
 </div>
 
 <div class="border-top pt-4 mt-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="h5 mb-0">Sessions</h2>
+        <h2 class="h5 mb-0">Сессии</h2>
         <form method="post" asp-page-handler="RevokeSessions" asp-route-id="@Model.UserDetails.Id">
-            <button type="submit" class="btn btn-outline-danger">Revoke all sessions</button>
+            <button type="submit" class="btn btn-outline-danger">Отозвать все сессии</button>
         </form>
     </div>
 
     @if (Model.UserDetails.Sessions.Count == 0)
     {
-        <p class="text-muted">No sessions recorded.</p>
+        <p class="text-muted">Сессий пока нет.</p>
     }
     else
     {
@@ -106,13 +106,13 @@
             <table class="table table-sm align-middle">
                 <thead>
                     <tr>
-                        <th>Created</th>
-                        <th>Last seen</th>
+                        <th>Создана</th>
+                        <th>Последняя активность</th>
                         <th>IP</th>
-                        <th>Browser</th>
-                        <th>OS</th>
-                        <th>Device</th>
-                        <th>Status</th>
+                        <th>Браузер</th>
+                        <th>ОС</th>
+                        <th>Устройство</th>
+                        <th>Статус</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -121,27 +121,27 @@
                         <tr>
                             <td>@session.CreatedAtUtc.ToString("u")</td>
                             <td>@session.LastSeenAtUtc.ToString("u")</td>
-                            <td>@(session.IpAddress ?? "Unknown")</td>
-                            <td>@(session.Browser ?? "Unknown")</td>
-                            <td>@(session.OperatingSystem ?? "Unknown")</td>
-                            <td>@(session.Device ?? "Unknown")</td>
+                            <td>@(session.IpAddress ?? "Неизвестно")</td>
+                            <td>@(session.Browser ?? "Неизвестно")</td>
+                            <td>@(session.OperatingSystem ?? "Неизвестно")</td>
+                            <td>@(session.Device ?? "Неизвестно")</td>
                             <td>
                                 @if (session.IsCurrent)
                                 {
-                                    <span class="badge text-bg-primary me-1">Current</span>
+                                    <span class="badge text-bg-primary me-1">Текущая</span>
                                 }
 
                                 @if (session.IsActive)
                                 {
-                                    <span class="badge text-bg-success">Active</span>
+                                    <span class="badge text-bg-success">Активна</span>
                                 }
                                 else if (session.RevokedAtUtc is not null)
                                 {
-                                    <span class="badge text-bg-secondary">Revoked</span>
+                                    <span class="badge text-bg-secondary">Отозвана</span>
                                 }
                                 else
                                 {
-                                    <span class="badge text-bg-secondary">Expired</span>
+                                    <span class="badge text-bg-secondary">Истекла</span>
                                 }
                             </td>
                         </tr>

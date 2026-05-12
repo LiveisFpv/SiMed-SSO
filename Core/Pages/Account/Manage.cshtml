@@ -2,18 +2,18 @@
 @model ManageModel
 
 @{
-    ViewData["Title"] = "Account";
+    ViewData["Title"] = "Аккаунт";
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h1 class="h3 mb-1">Account</h1>
+        <h1 class="h3 mb-1">Аккаунт</h1>
         <p class="text-muted mb-0">@Model.Account.Email</p>
     </div>
     <div class="d-flex gap-2">
         <a class="btn btn-outline-primary" asp-page="/Account/Manage/Mfa">MFA</a>
-        <a class="btn btn-outline-primary" asp-page="/Account/ChangeEmail">Change email</a>
-        <a class="btn btn-outline-primary" asp-page="/Account/ChangePassword">Change password</a>
+        <a class="btn btn-outline-primary" asp-page="/Account/ChangeEmail">Сменить email</a>
+        <a class="btn btn-outline-primary" asp-page="/Account/ChangePassword">Сменить пароль</a>
     </div>
 </div>
 
@@ -23,46 +23,46 @@
 }
 
 <dl class="row">
-    <dt class="col-sm-3">User name</dt>
+    <dt class="col-sm-3">Имя пользователя</dt>
     <dd class="col-sm-9">@Model.Account.UserName</dd>
 
     <dt class="col-sm-3">Email</dt>
     <dd class="col-sm-9">@Model.Account.Email</dd>
 
-    <dt class="col-sm-3">Email confirmed</dt>
-    <dd class="col-sm-9">@(Model.Account.EmailConfirmed ? "Yes" : "No")</dd>
+    <dt class="col-sm-3">Email подтвержден</dt>
+    <dd class="col-sm-9">@(Model.Account.EmailConfirmed ? "Да" : "Нет")</dd>
 
-    <dt class="col-sm-3">Phone</dt>
-    <dd class="col-sm-9">@(Model.Account.PhoneNumber ?? "Not set")</dd>
+    <dt class="col-sm-3">Телефон</dt>
+    <dd class="col-sm-9">@(Model.Account.PhoneNumber ?? "Не задан")</dd>
 
-    <dt class="col-sm-3">MFA enabled</dt>
-    <dd class="col-sm-9">@(Model.Account.TwoFactorEnabled ? "Yes" : "No")</dd>
+    <dt class="col-sm-3">MFA включена</dt>
+    <dd class="col-sm-9">@(Model.Account.TwoFactorEnabled ? "Да" : "Нет")</dd>
 
-    <dt class="col-sm-3">Recovery codes left</dt>
+    <dt class="col-sm-3">Осталось recovery codes</dt>
     <dd class="col-sm-9">@Model.Account.RecoveryCodesLeft</dd>
 </dl>
 
 <div class="border-top pt-4 mt-4">
     <div class="d-flex align-items-center justify-content-between">
         <div>
-            <h2 class="h5 mb-1">Multi-factor authentication</h2>
-            <p class="text-muted mb-0">Use an authenticator app to protect account sign-in.</p>
+            <h2 class="h5 mb-1">Многофакторная аутентификация</h2>
+            <p class="text-muted mb-0">Используйте приложение-аутентификатор для защиты входа.</p>
         </div>
-        <a class="btn btn-outline-primary" asp-page="/Account/Manage/Mfa">Manage MFA</a>
+        <a class="btn btn-outline-primary" asp-page="/Account/Manage/Mfa">Управление MFA</a>
     </div>
 </div>
 
 <div class="border-top pt-4 mt-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
-        <h2 class="h5 mb-0">Sessions</h2>
+        <h2 class="h5 mb-0">Сессии</h2>
         <form method="post" asp-page-handler="SignOutEverywhere">
-            <button type="submit" class="btn btn-outline-danger">Sign out everywhere</button>
+            <button type="submit" class="btn btn-outline-danger">Выйти на всех устройствах</button>
         </form>
     </div>
 
     @if (Model.Sessions.Count == 0)
     {
-        <p class="text-muted">No sessions recorded.</p>
+        <p class="text-muted">Сессии не найдены.</p>
     }
     else
     {
@@ -70,13 +70,13 @@
             <table class="table table-sm align-middle">
                 <thead>
                     <tr>
-                        <th>Created</th>
-                        <th>Last seen</th>
+                        <th>Создана</th>
+                        <th>Последняя активность</th>
                         <th>IP</th>
-                        <th>Browser</th>
+                        <th>Браузер</th>
                         <th>OS</th>
-                        <th>Device</th>
-                        <th>Status</th>
+                        <th>Устройство</th>
+                        <th>Статус</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -85,27 +85,27 @@
                         <tr>
                             <td>@session.CreatedAtUtc.ToString("u")</td>
                             <td>@session.LastSeenAtUtc.ToString("u")</td>
-                            <td>@(session.IpAddress ?? "Unknown")</td>
-                            <td>@(session.Browser ?? "Unknown")</td>
-                            <td>@(session.OperatingSystem ?? "Unknown")</td>
-                            <td>@(session.Device ?? "Unknown")</td>
+                            <td>@(session.IpAddress ?? "Неизвестно")</td>
+                            <td>@(session.Browser ?? "Неизвестно")</td>
+                            <td>@(session.OperatingSystem ?? "Неизвестно")</td>
+                            <td>@(session.Device ?? "Неизвестно")</td>
                             <td>
                                 @if (session.IsCurrent)
                                 {
-                                    <span class="badge text-bg-primary me-1">Current</span>
+                                    <span class="badge text-bg-primary me-1">Текущая</span>
                                 }
 
                                 @if (session.IsActive)
                                 {
-                                    <span class="badge text-bg-success">Active</span>
+                                    <span class="badge text-bg-success">Активна</span>
                                 }
                                 else if (session.RevokedAtUtc is not null)
                                 {
-                                    <span class="badge text-bg-secondary">Revoked</span>
+                                    <span class="badge text-bg-secondary">Отозвана</span>
                                 }
                                 else
                                 {
-                                    <span class="badge text-bg-secondary">Expired</span>
+                                    <span class="badge text-bg-secondary">Истекла</span>
                                 }
                             </td>
                         </tr>

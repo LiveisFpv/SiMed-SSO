@@ -34,7 +34,7 @@ public sealed class OAuthClientService : IOAuthClientService
             {
                 Id = await RequireIdAsync(application, cancellationToken),
                 ClientId = await RequireClientIdAsync(application, cancellationToken),
-                DisplayName = await _applicationManager.GetDisplayNameAsync(application, cancellationToken) ?? "Unnamed client",
+                DisplayName = await _applicationManager.GetDisplayNameAsync(application, cancellationToken) ?? "OAuth client без имени",
                 IsActive = IsActive(permissions),
                 RequirePkce = await RequiresPkceAsync(application, cancellationToken),
                 RedirectUris = await GetRedirectUrisAsync(application, cancellationToken),
@@ -64,7 +64,7 @@ public sealed class OAuthClientService : IOAuthClientService
         {
             Id = await RequireIdAsync(application, cancellationToken),
             ClientId = await RequireClientIdAsync(application, cancellationToken),
-            DisplayName = await _applicationManager.GetDisplayNameAsync(application, cancellationToken) ?? "Unnamed client",
+            DisplayName = await _applicationManager.GetDisplayNameAsync(application, cancellationToken) ?? "OAuth client без имени",
             Description = settings.GetValueOrDefault(OAuthClientSettings.Description),
             IsActive = IsActive(permissions),
             RequirePkce = await RequiresPkceAsync(application, cancellationToken),
@@ -400,7 +400,7 @@ public sealed class OAuthClientService : IOAuthClientService
         var redirectUris = ParseRedirectUris(redirectUrisText).ToArray();
         if (redirectUris.Length == 0)
         {
-            modelState.AddError(key, "At least one redirect URI is required.");
+            modelState.AddError(key, "Укажите хотя бы один redirect URI.");
             return;
         }
 
@@ -409,7 +409,7 @@ public sealed class OAuthClientService : IOAuthClientService
             if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var uri) ||
                 (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
             {
-                modelState.AddError(key, $"Redirect URI '{redirectUri}' must be an absolute HTTP or HTTPS URI.");
+                modelState.AddError(key, $"Redirect URI '{redirectUri}' должен быть абсолютным HTTP или HTTPS URI.");
                 continue;
             }
 
@@ -417,7 +417,7 @@ public sealed class OAuthClientService : IOAuthClientService
                 (!_environment.IsDevelopment() ||
                  !string.Equals(uri.Host, "localhost", StringComparison.OrdinalIgnoreCase)))
             {
-                modelState.AddError(key, $"Redirect URI '{redirectUri}' must use HTTPS outside localhost development.");
+                modelState.AddError(key, $"Redirect URI '{redirectUri}' должен использовать HTTPS вне localhost development.");
             }
         }
     }
@@ -430,7 +430,7 @@ public sealed class OAuthClientService : IOAuthClientService
         var selectedScopes = GetSelectedScopes(scopes).ToArray();
         if (selectedScopes.Length == 0)
         {
-            modelState.AddError(key, "At least one scope is required.");
+            modelState.AddError(key, "Выберите хотя бы один scope.");
             return;
         }
 
@@ -439,7 +439,7 @@ public sealed class OAuthClientService : IOAuthClientService
         {
             if (!allowedScopes.Contains(scope))
             {
-                modelState.AddError(key, $"Scope '{scope}' is not allowed.");
+                modelState.AddError(key, $"Scope '{scope}' не разрешен.");
             }
         }
     }

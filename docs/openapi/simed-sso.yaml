@@ -3,11 +3,11 @@ info:
   title: SiMed SSO OIDC API
   version: v1
   description: |
-    Public OpenID Connect/OAuth2 contract for SiMed SSO integrations.
-    The discovery document remains the primary machine-readable OIDC source.
+    Публичный OpenID Connect/OAuth2 contract для интеграций с SiMed SSO.
+    Discovery document остается основным machine-readable OIDC-источником.
 servers:
   - url: https://localhost:7269
-    description: Local HTTPS development server
+    description: Локальный HTTPS development server
 tags:
   - name: Discovery
   - name: Authorization
@@ -33,7 +33,7 @@ paths:
       operationId: getJwks
       responses:
         "200":
-          description: Public signing keys.
+          description: Публичные signing keys.
           content:
             application/json:
               schema:
@@ -41,7 +41,7 @@ paths:
   /connect/authorize:
     get:
       tags: [Authorization]
-      summary: Start Authorization Code Flow with PKCE
+      summary: Запуск Authorization Code Flow with PKCE
       operationId: authorize
       parameters:
         - name: client_id
@@ -85,16 +85,16 @@ paths:
             type: string
       responses:
         "302":
-          description: Redirects to login, consent page, or the registered redirect URI with code/error.
+          description: Redirect на login, consent page или registered redirect URI с code/error.
         "400":
-          description: Invalid authorization request.
+          description: Неверный authorization request.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/OAuthError"
     post:
       tags: [Authorization]
-      summary: Submit consent decision
+      summary: Отправка решения consent
       operationId: submitConsent
       requestBody:
         required: true
@@ -113,11 +113,11 @@ paths:
                 - __RequestVerificationToken
       responses:
         "302":
-          description: Redirects to redirect_uri with authorization code or OAuth error.
+          description: Redirect на redirect_uri с authorization code или OAuth error.
   /connect/token:
     post:
       tags: [Tokens]
-      summary: Exchange authorization code or refresh token
+      summary: Обмен authorization code или refresh token
       operationId: token
       requestBody:
         required: true
@@ -143,19 +143,19 @@ paths:
   /connect/userinfo:
     get:
       tags: [UserInfo]
-      summary: Return claims for the current access token subject
+      summary: Возврат claims для subject текущего access token
       operationId: userInfo
       security:
         - bearerAuth: []
       responses:
         "200":
-          description: UserInfo claims according to granted scopes.
+          description: UserInfo claims согласно granted scopes.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserInfo"
         "401":
-          description: Missing or invalid bearer access token.
+          description: Отсутствует или неверен bearer access token.
           content:
             application/json:
               schema:

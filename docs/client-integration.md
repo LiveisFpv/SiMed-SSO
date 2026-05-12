@@ -1,4 +1,4 @@
-# Client Integration Guide
+# Руководство по интеграции клиента
 
 Этот документ описывает базовую интеграцию клиентского приложения с SiMed SSO.
 
@@ -103,7 +103,7 @@ curl.exe -k -X POST https://localhost:7269/connect/token `
   -d "refresh_token=REFRESH_TOKEN"
 ```
 
-После успешного ответа замените старый refresh token новым. Старый token считать недействительным.
+После успешного ответа замените старый refresh token новым. Старый token считайте недействительным.
 
 ## 8. Получите UserInfo
 

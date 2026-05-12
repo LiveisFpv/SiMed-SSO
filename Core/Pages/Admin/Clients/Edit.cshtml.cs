@@ -45,7 +45,7 @@ public class EditModel : PageModel
             return NotFound();
         }
 
-        TempData["StatusMessage"] = "OAuth client was updated.";
+        TempData["StatusMessage"] = "OAuth client обновлен.";
         return RedirectToPage("./Details", new { id = Input.Id });
     }
 }

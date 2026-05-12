@@ -36,7 +36,7 @@ public class IndexModel : PageModel
 
         if (user.Id == _userManager.GetUserId(User))
         {
-            TempData["ErrorMessage"] = "You cannot deactivate your own account.";
+            TempData["ErrorMessage"] = "Нельзя деактивировать собственный аккаунт.";
             return RedirectToPage();
         }
 
@@ -52,7 +52,7 @@ public class IndexModel : PageModel
         }
 
         await _userManager.UpdateSecurityStampAsync(user);
-        TempData["StatusMessage"] = "User was deactivated.";
+        TempData["StatusMessage"] = "Пользователь деактивирован.";
         return RedirectToPage();
     }
 
@@ -77,7 +77,7 @@ public class IndexModel : PageModel
         }
 
         await _userManager.UpdateSecurityStampAsync(user);
-        TempData["StatusMessage"] = "User was reactivated.";
+        TempData["StatusMessage"] = "Пользователь реактивирован.";
         return RedirectToPage();
     }
 

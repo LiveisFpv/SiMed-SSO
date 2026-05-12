@@ -17,30 +17,30 @@ public sealed class IdentityEmailSender :
     public Task SendConfirmationLinkAsync(ApplicationUser user, string email, string confirmationLink)
     {
         var body = $"""
-            <p>Please confirm your email address for SiMed SSO.</p>
-            <p><a href="{WebUtility.HtmlEncode(confirmationLink)}">Confirm email</a></p>
+            <p>Подтвердите email для аккаунта SiMed SSO.</p>
+            <p><a href="{WebUtility.HtmlEncode(confirmationLink)}">Подтвердить email</a></p>
             """;
 
-        return _emailSender.SendEmailAsync(email, "Confirm your email", body);
+        return _emailSender.SendEmailAsync(email, "Подтверждение email", body);
     }
 
     public Task SendPasswordResetLinkAsync(ApplicationUser user, string email, string resetLink)
     {
         var body = $"""
-            <p>A password reset was requested for your SiMed SSO account.</p>
-            <p><a href="{WebUtility.HtmlEncode(resetLink)}">Reset password</a></p>
+            <p>Запрошен сброс пароля для аккаунта SiMed SSO.</p>
+            <p><a href="{WebUtility.HtmlEncode(resetLink)}">Сбросить пароль</a></p>
             """;
 
-        return _emailSender.SendEmailAsync(email, "Reset your password", body);
+        return _emailSender.SendEmailAsync(email, "Сброс пароля", body);
     }
 
     public Task SendPasswordResetCodeAsync(ApplicationUser user, string email, string resetCode)
     {
         var body = $"""
-            <p>A password reset code was requested for your SiMed SSO account.</p>
+            <p>Запрошен код сброса пароля для аккаунта SiMed SSO.</p>
             <p><strong>{WebUtility.HtmlEncode(resetCode)}</strong></p>
             """;
 
-        return _emailSender.SendEmailAsync(email, "Reset your password", body);
+        return _emailSender.SendEmailAsync(email, "Сброс пароля", body);
     }
 }

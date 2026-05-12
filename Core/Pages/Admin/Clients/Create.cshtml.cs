@@ -44,7 +44,7 @@ public class CreateModel : PageModel
             _userManager.GetUserId(User),
             HttpContext.RequestAborted);
 
-        TempData["StatusMessage"] = "OAuth client was created. Copy the client secret now; it will not be shown again.";
+        TempData["StatusMessage"] = "OAuth client создан. Скопируйте client secret сейчас: он больше не будет показан.";
         TempData["CreatedClientId"] = result.ClientId;
         TempData["CreatedClientSecret"] = result.ClientSecret;
         return RedirectToPage("./Details", new { id = result.Id });

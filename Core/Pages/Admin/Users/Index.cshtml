@@ -2,15 +2,15 @@
 @model IndexModel
 
 @{
-    ViewData["Title"] = "Users";
+    ViewData["Title"] = "Пользователи";
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h1 class="h3 mb-1">Users</h1>
-        <p class="text-muted mb-0">Review account state, lockouts, and assigned roles.</p>
+        <h1 class="h3 mb-1">Пользователи</h1>
+        <p class="text-muted mb-0">Просмотр состояния аккаунтов, блокировок и назначенных ролей.</p>
     </div>
-    <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Back</a>
+    <a class="btn btn-outline-secondary" asp-page="/Admin/Index">Назад</a>
 </div>
 
 @if (TempData["StatusMessage"] is string statusMessage)
@@ -27,12 +27,12 @@
     <table class="table table-sm align-middle">
         <thead>
             <tr>
-                <th>User</th>
-                <th>Roles</th>
-                <th>Status</th>
+                <th>Пользователь</th>
+                <th>Роли</th>
+                <th>Статус</th>
                 <th>Email</th>
-                <th>Created</th>
-                <th class="text-end">Actions</th>
+                <th>Создан</th>
+                <th class="text-end">Действия</th>
             </tr>
         </thead>
         <tbody>
@@ -53,49 +53,49 @@
                         }
                         else
                         {
-                            <span class="text-muted">No roles</span>
+                            <span class="text-muted">Ролей нет</span>
                         }
                     </td>
                     <td>
                         @if (user.IsActive)
                         {
-                            <span class="badge text-bg-success">Active</span>
+                            <span class="badge text-bg-success">Активен</span>
                         }
                         else
                         {
-                            <span class="badge text-bg-danger">Inactive</span>
+                            <span class="badge text-bg-danger">Неактивен</span>
                         }
 
                         @if (user.IsLockedOut)
                         {
-                            <span class="badge text-bg-warning">Locked</span>
+                            <span class="badge text-bg-warning">Заблокирован</span>
                         }
                     </td>
                     <td>
                         @if (user.EmailConfirmed)
                         {
-                            <span class="text-success">Confirmed</span>
+                            <span class="text-success">Подтвержден</span>
                         }
                         else
                         {
-                            <span class="text-muted">Unconfirmed</span>
+                            <span class="text-muted">Не подтвержден</span>
                         }
                     </td>
                     <td>@user.CreatedAtUtc.ToString("u")</td>
                     <td class="text-end">
-                        <a class="btn btn-sm btn-outline-secondary" asp-page="./Details" asp-route-id="@user.Id">Details</a>
-                        <a class="btn btn-sm btn-outline-primary" asp-page="./EditRoles" asp-route-id="@user.Id">Roles</a>
+                        <a class="btn btn-sm btn-outline-secondary" asp-page="./Details" asp-route-id="@user.Id">Детали</a>
+                        <a class="btn btn-sm btn-outline-primary" asp-page="./EditRoles" asp-route-id="@user.Id">Роли</a>
 
                         @if (user.IsActive)
                         {
                             <form class="d-inline" method="post" asp-page-handler="Deactivate" asp-route-id="@user.Id">
-                                <button type="submit" class="btn btn-sm btn-outline-danger" disabled="@user.IsCurrentUser">Deactivate</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger" disabled="@user.IsCurrentUser">Деактивировать</button>
                             </form>
                         }
                         else
                         {
                             <form class="d-inline" method="post" asp-page-handler="Reactivate" asp-route-id="@user.Id">
-                                <button type="submit" class="btn btn-sm btn-outline-success">Reactivate</button>
+                                <button type="submit" class="btn btn-sm btn-outline-success">Реактивировать</button>
                             </form>
                         }
                     </td>

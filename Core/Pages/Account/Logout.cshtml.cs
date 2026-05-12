@@ -26,7 +26,7 @@ public class LogoutModel : PageModel
 
     public async Task<IActionResult> OnPostAsync()
     {
-        await _userSessionService.RevokeCurrentSessionAsync(HttpContext, "Logout");
+        await _userSessionService.RevokeCurrentSessionAsync(HttpContext, "Выход из аккаунта");
         await _signInManager.SignOutAsync();
         return RedirectToPage("/Index");
     }

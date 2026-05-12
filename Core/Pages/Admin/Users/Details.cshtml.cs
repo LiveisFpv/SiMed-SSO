@@ -47,7 +47,7 @@ public class DetailsModel : PageModel
 
         if (user.Id == _userManager.GetUserId(User))
         {
-            TempData["ErrorMessage"] = "You cannot deactivate your own account.";
+            TempData["ErrorMessage"] = "Нельзя деактивировать собственный аккаунт.";
             return RedirectToPage(new { id = user.Id });
         }
 
@@ -64,9 +64,9 @@ public class DetailsModel : PageModel
 
         await _userSessionService.RevokeAllUserSessionsAsync(
             user,
-            "User was deactivated.",
+            "Пользователь деактивирован.",
             _userManager.GetUserId(User));
-        TempData["StatusMessage"] = "User was deactivated.";
+        TempData["StatusMessage"] = "Пользователь деактивирован.";
         return RedirectToPage(new { id = user.Id });
     }
 
@@ -91,7 +91,7 @@ public class DetailsModel : PageModel
         }
 
         await _userManager.UpdateSecurityStampAsync(user);
-        TempData["StatusMessage"] = "User was reactivated.";
+        TempData["StatusMessage"] = "Пользователь реактивирован.";
         return RedirectToPage(new { id = user.Id });
     }
 
@@ -105,10 +105,10 @@ public class DetailsModel : PageModel
 
         await _userSessionService.RevokeAllUserSessionsAsync(
             user,
-            "Administrator revoked all sessions.",
+            "Администратор отозвал все сессии.",
             _userManager.GetUserId(User));
 
-        TempData["StatusMessage"] = "User sessions were revoked.";
+        TempData["StatusMessage"] = "Сессии пользователя отозваны.";
         return RedirectToPage(new { id = user.Id });
     }
 

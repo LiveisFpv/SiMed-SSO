@@ -38,7 +38,7 @@ public class DetailsModel : PageModel
             return NotFound();
         }
 
-        TempData["StatusMessage"] = "OAuth client was deactivated.";
+        TempData["StatusMessage"] = "OAuth client деактивирован.";
         return RedirectToPage(new { id });
     }
 
@@ -49,7 +49,7 @@ public class DetailsModel : PageModel
             return NotFound();
         }
 
-        TempData["StatusMessage"] = "OAuth client was reactivated.";
+        TempData["StatusMessage"] = "OAuth client реактивирован.";
         return RedirectToPage(new { id });
     }
 
@@ -61,7 +61,7 @@ public class DetailsModel : PageModel
             return NotFound();
         }
 
-        TempData["StatusMessage"] = "Client secret was rotated. Copy the new secret now; it will not be shown again.";
+        TempData["StatusMessage"] = "Client secret сменен. Скопируйте новый secret сейчас: он больше не будет показан.";
         TempData["CreatedClientId"] = result.ClientId;
         TempData["CreatedClientSecret"] = result.ClientSecret;
         return RedirectToPage(new { id });

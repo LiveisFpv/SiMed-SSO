@@ -2,19 +2,19 @@
 @model ConfirmEmailModel
 
 @{
-    ViewData["Title"] = "Email confirmation";
+    ViewData["Title"] = "Подтверждение email";
 }
 
 <div class="text-center py-5">
-    <h1 class="h3 mb-3">Email confirmation</h1>
+    <h1 class="h3 mb-3">Подтверждение email</h1>
     @if (Model.Succeeded)
     {
-        <p class="text-muted mb-4">Your email has been confirmed.</p>
-        <a class="btn btn-primary" asp-page="/Account/Login">Login</a>
+        <p class="text-muted mb-4">Email подтвержден.</p>
+        <a class="btn btn-primary" asp-page="/Account/Login">Войти</a>
     }
     else
     {
-        <p class="text-muted mb-4">The confirmation link is invalid or expired.</p>
-        <a class="btn btn-outline-primary" asp-page="/Account/ResendEmailConfirmation">Resend confirmation</a>
+        <p class="text-muted mb-4">Ссылка подтверждения недействительна или истекла.</p>
+        <a class="btn btn-outline-primary" asp-page="/Account/ResendEmailConfirmation">Отправить подтверждение повторно</a>
     }
 </div>

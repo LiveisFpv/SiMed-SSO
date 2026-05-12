@@ -2,15 +2,15 @@
 @model MfaModel
 
 @{
-    ViewData["Title"] = "Multi-factor authentication";
+    ViewData["Title"] = "Многофакторная аутентификация";
 }
 
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h1 class="h3 mb-1">Multi-factor authentication</h1>
-        <p class="text-muted mb-0">Protect account sign-in with an authenticator app.</p>
+        <h1 class="h3 mb-1">Многофакторная аутентификация</h1>
+        <p class="text-muted mb-0">Защитите вход в аккаунт через приложение-аутентификатор.</p>
     </div>
-    <a class="btn btn-outline-secondary" asp-page="/Account/Manage">Back to account</a>
+    <a class="btn btn-outline-secondary" asp-page="/Account/Manage">Назад к аккаунту</a>
 </div>
 
 @if (TempData["StatusMessage"] is string statusMessage)
@@ -21,8 +21,8 @@
 @if (Model.RecoveryCodes.Count > 0)
 {
     <div class="alert alert-warning" role="alert">
-        <strong>Save these recovery codes now.</strong>
-        They will not be shown again.
+        <strong>Сохраните эти recovery codes сейчас.</strong>
+        Они больше не будут показаны.
     </div>
     <div class="row row-cols-1 row-cols-md-2 g-2 mb-4">
         @foreach (var code in Model.RecoveryCodes)
@@ -37,12 +37,12 @@
 <div class="row g-4">
     <div class="col-lg-7">
         <section class="mb-4">
-            <h2 class="h5">Status</h2>
+            <h2 class="h5">Статус</h2>
             <dl class="row mb-0">
-                <dt class="col-sm-4">MFA enabled</dt>
-                <dd class="col-sm-8">@(Model.IsMfaEnabled ? "Yes" : "No")</dd>
+                <dt class="col-sm-4">MFA включена</dt>
+                <dd class="col-sm-8">@(Model.IsMfaEnabled ? "Да" : "Нет")</dd>
 
-                <dt class="col-sm-4">Recovery codes left</dt>
+                <dt class="col-sm-4">Осталось recovery codes</dt>
                 <dd class="col-sm-8">@Model.RecoveryCodesLeft</dd>
             </dl>
         </section>
@@ -50,11 +50,11 @@
         @if (!Model.IsMfaEnabled)
         {
             <section class="border-top pt-4">
-                <h2 class="h5">Enable authenticator app</h2>
+                <h2 class="h5">Подключить приложение-аутентификатор</h2>
                 <div class="mb-3" style="max-width: 220px;">
                     @Html.Raw(Model.QrCodeSvg)
                 </div>
-                <p class="text-muted">Manual setup key</p>
+                <p class="text-muted">Ключ для ручной настройки</p>
                 <code class="d-block border rounded p-2 mb-3">@Model.SharedKey</code>
 
                 <form method="post" asp-page-handler="Enable">
@@ -64,7 +64,7 @@
                         <input asp-for="EnableInput.VerificationCode" class="form-control" autocomplete="one-time-code" inputmode="numeric" />
                         <span asp-validation-for="EnableInput.VerificationCode" class="text-danger"></span>
                     </div>
-                    <button type="submit" class="btn btn-primary">Enable MFA</button>
+                    <button type="submit" class="btn btn-primary">Включить MFA</button>
                 </form>
             </section>
         }
@@ -74,10 +74,10 @@
                 <h2 class="h5">Recovery codes</h2>
                 @if (Model.RecoveryCodesLeft == 0)
                 {
-                    <div class="alert alert-warning" role="alert">You have no recovery codes left.</div>
+                    <div class="alert alert-warning" role="alert">У вас не осталось recovery codes.</div>
                 }
                 <form method="post" asp-page-handler="GenerateRecoveryCodes">
-                    <button type="submit" class="btn btn-outline-primary">Generate new recovery codes</button>
+                    <button type="submit" class="btn btn-outline-primary">Сгенерировать новые recovery codes</button>
                 </form>
             </section>
         }
@@ -85,26 +85,26 @@
 
     <div class="col-lg-5">
         <section class="border-top pt-4 mb-4">
-            <h2 class="h5">Disable MFA</h2>
+            <h2 class="h5">Отключить MFA</h2>
             <form method="post" asp-page-handler="Disable">
                 <div class="mb-3">
                     <label asp-for="PasswordInput.CurrentPassword" class="form-label"></label>
                     <input asp-for="PasswordInput.CurrentPassword" class="form-control" autocomplete="current-password" />
                     <span asp-validation-for="PasswordInput.CurrentPassword" class="text-danger"></span>
                 </div>
-                <button type="submit" class="btn btn-outline-danger" disabled="@(!Model.IsMfaEnabled)">Disable MFA</button>
+                <button type="submit" class="btn btn-outline-danger" disabled="@(!Model.IsMfaEnabled)">Отключить MFA</button>
             </form>
         </section>
 
         <section class="border-top pt-4">
-            <h2 class="h5">Reset authenticator</h2>
+            <h2 class="h5">Сбросить authenticator key</h2>
             <form method="post" asp-page-handler="ResetAuthenticator">
                 <div class="mb-3">
                     <label asp-for="PasswordInput.CurrentPassword" class="form-label"></label>
                     <input asp-for="PasswordInput.CurrentPassword" class="form-control" autocomplete="current-password" />
                     <span asp-validation-for="PasswordInput.CurrentPassword" class="text-danger"></span>
                 </div>
-                <button type="submit" class="btn btn-outline-danger">Reset authenticator key</button>
+                <button type="submit" class="btn btn-outline-danger">Сбросить authenticator key</button>
             </form>
         </section>
     </div>

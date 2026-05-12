@@ -44,7 +44,7 @@ public class LoginModel : PageModel
         var user = await _userManager.FindByEmailAsync(Input.Email);
         if (user is null)
         {
-            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            ModelState.AddModelError(string.Empty, "Неверный email или пароль.");
             return Page();
         }
 
@@ -67,7 +67,7 @@ public class LoginModel : PageModel
             return RedirectToLocal(Input.ReturnUrl);
         }
 
-        ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+        ModelState.AddModelError(string.Empty, "Неверный email или пароль.");
         return Page();
     }
 

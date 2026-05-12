@@ -62,7 +62,7 @@ public class LoginWithRecoveryCodeModel : PageModel
 
         if (!result.Succeeded)
         {
-            ModelState.AddModelError(string.Empty, "Invalid recovery code.");
+            ModelState.AddModelError(string.Empty, "Неверный recovery code.");
             return Page();
         }
 

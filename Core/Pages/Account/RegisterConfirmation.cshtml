@@ -2,11 +2,11 @@
 @model RegisterConfirmationModel
 
 @{
-    ViewData["Title"] = "Confirm email";
+    ViewData["Title"] = "Подтвердите email";
 }
 
 <div class="text-center py-5">
-    <h1 class="h3 mb-3">Confirm your email</h1>
-    <p class="text-muted mb-4">A confirmation link was sent to @Model.Email.</p>
-    <a class="btn btn-outline-primary" asp-page="/Account/ResendEmailConfirmation">Resend confirmation</a>
+    <h1 class="h3 mb-3">Подтвердите email</h1>
+    <p class="text-muted mb-4">Ссылка подтверждения отправлена на @Model.Email.</p>
+    <a class="btn btn-outline-primary" asp-page="/Account/ResendEmailConfirmation">Отправить повторно</a>
 </div>

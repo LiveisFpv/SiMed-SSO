@@ -2,19 +2,19 @@
 @model ConfirmEmailChangeModel
 
 @{
-    ViewData["Title"] = "Email change";
+    ViewData["Title"] = "Смена email";
 }
 
 <div class="text-center py-5">
-    <h1 class="h3 mb-3">Email change</h1>
+    <h1 class="h3 mb-3">Смена email</h1>
     @if (Model.Succeeded)
     {
-        <p class="text-muted mb-4">Your email has been changed.</p>
-        <a class="btn btn-primary" asp-page="/Account/Manage">Back to account</a>
+        <p class="text-muted mb-4">Email изменен.</p>
+        <a class="btn btn-primary" asp-page="/Account/Manage">К аккаунту</a>
     }
     else
     {
-        <p class="text-muted mb-4">The email change link is invalid or expired.</p>
-        <a class="btn btn-outline-primary" asp-page="/Account/Manage">Back to account</a>
+        <p class="text-muted mb-4">Ссылка смены email недействительна или истекла.</p>
+        <a class="btn btn-outline-primary" asp-page="/Account/Manage">К аккаунту</a>
     }
 </div>
