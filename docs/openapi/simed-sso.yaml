@@ -1,0 +1,293 @@
+openapi: 3.0.3
+info:
+  title: SiMed SSO OIDC API
+  version: v1
+  description: |
+    Public OpenID Connect/OAuth2 contract for SiMed SSO integrations.
+    The discovery document remains the primary machine-readable OIDC source.
+servers:
+  - url: https://localhost:7269
+    description: Local HTTPS development server
+tags:
+  - name: Discovery
+  - name: Authorization
+  - name: Tokens
+  - name: UserInfo
+paths:
+  /.well-known/openid-configuration:
+    get:
+      tags: [Discovery]
+      summary: OpenID Connect discovery metadata
+      operationId: getOpenIdConfiguration
+      responses:
+        "200":
+          description: OIDC metadata document.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OpenIdConfiguration"
+  /.well-known/jwks:
+    get:
+      tags: [Discovery]
+      summary: JSON Web Key Set
+      operationId: getJwks
+      responses:
+        "200":
+          description: Public signing keys.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Jwks"
+  /connect/authorize:
+    get:
+      tags: [Authorization]
+      summary: Start Authorization Code Flow with PKCE
+      operationId: authorize
+      parameters:
+        - name: client_id
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: response_type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [code]
+        - name: redirect_uri
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uri
+        - name: scope
+          in: query
+          required: true
+          schema:
+            type: string
+            example: openid profile email offline_access
+        - name: code_challenge
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: code_challenge_method
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [S256]
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "302":
+          description: Redirects to login, consent page, or the registered redirect URI with code/error.
+        "400":
+          description: Invalid authorization request.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+    post:
+      tags: [Authorization]
+      summary: Submit consent decision
+      operationId: submitConsent
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                submit:
+                  type: string
+                  enum: [Accept, Deny]
+                __RequestVerificationToken:
+                  type: string
+              required:
+                - submit
+                - __RequestVerificationToken
+      responses:
+        "302":
+          description: Redirects to redirect_uri with authorization code or OAuth error.
+  /connect/token:
+    post:
+      tags: [Tokens]
+      summary: Exchange authorization code or refresh token
+      operationId: token
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              oneOf:
+                - $ref: "#/components/schemas/AuthorizationCodeTokenRequest"
+                - $ref: "#/components/schemas/RefreshTokenRequest"
+      responses:
+        "200":
+          description: Token response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          description: OAuth token error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+  /connect/userinfo:
+    get:
+      tags: [UserInfo]
+      summary: Return claims for the current access token subject
+      operationId: userInfo
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: UserInfo claims according to granted scopes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserInfo"
+        "401":
+          description: Missing or invalid bearer access token.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    OpenIdConfiguration:
+      type: object
+      properties:
+        issuer:
+          type: string
+          format: uri
+        authorization_endpoint:
+          type: string
+          format: uri
+        token_endpoint:
+          type: string
+          format: uri
+        userinfo_endpoint:
+          type: string
+          format: uri
+        jwks_uri:
+          type: string
+          format: uri
+        scopes_supported:
+          type: array
+          items:
+            type: string
+        response_types_supported:
+          type: array
+          items:
+            type: string
+        grant_types_supported:
+          type: array
+          items:
+            type: string
+    Jwks:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+    AuthorizationCodeTokenRequest:
+      type: object
+      required:
+        - grant_type
+        - client_id
+        - client_secret
+        - redirect_uri
+        - code
+        - code_verifier
+      properties:
+        grant_type:
+          type: string
+          enum: [authorization_code]
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        redirect_uri:
+          type: string
+          format: uri
+        code:
+          type: string
+        code_verifier:
+          type: string
+    RefreshTokenRequest:
+      type: object
+      required:
+        - grant_type
+        - client_id
+        - client_secret
+        - refresh_token
+      properties:
+        grant_type:
+          type: string
+          enum: [refresh_token]
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        refresh_token:
+          type: string
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        id_token:
+          type: string
+        refresh_token:
+          type: string
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          example: 3599
+        scope:
+          type: string
+          example: openid profile email offline_access
+    UserInfo:
+      type: object
+      required:
+        - sub
+      properties:
+        sub:
+          type: string
+        name:
+          type: string
+        preferred_username:
+          type: string
+        email:
+          type: string
+          format: email
+        email_verified:
+          type: boolean
+    OAuthError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: invalid_request
+        error_description:
+          type: string
+        error_uri:
+          type: string
+          format: uri

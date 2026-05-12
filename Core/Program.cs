@@ -164,6 +164,28 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/simed-sso.yaml", "SiMed SSO OIDC API");
+        options.RoutePrefix = "swagger";
+        options.DocumentTitle = "SiMed SSO API";
+    });
+
+    app.MapGet("/openapi/simed-sso.yaml", (IWebHostEnvironment environment) =>
+    {
+        var path = Path.Combine(environment.ContentRootPath, "..", "docs", "openapi", "simed-sso.yaml");
+        if (!File.Exists(path))
+        {
+            return Results.NotFound();
+        }
+
+        return Results.File(path, "application/yaml");
+    });
+}
+
 app.UseRouting();
 
 app.UseAuthentication();

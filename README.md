@@ -28,6 +28,8 @@ SiMed-SSO — SSO-сервис для интеграции внутренних 
 ## Документация
 
 - [OIDC quickstart](docs/oidc-quickstart.md) — проверка discovery, JWKS, authorization code flow, refresh token и UserInfo.
+- [API reference](docs/api-reference.md) — публичный OIDC/API contract для интеграторов.
+- [Client integration guide](docs/client-integration.md) — регистрация клиента и интеграция Authorization Code Flow with PKCE.
 - [Production OIDC certificates](docs/oidc-production-certificates.md) — настройка signing/encryption certificates для Staging и Production.
 
 ## План разработки
@@ -42,6 +44,6 @@ SiMed-SSO — SSO-сервис для интеграции внутренних 
 - [x] Discovery, JWKS, UserInfo
 - [x] Production-настройка signing/encryption certificates
 - [x] MFA
+- [x] Подробная документация API
 - [ ] Audit log
-- [ ] Подробная документация API
 - [ ] Клиентское приложение как пример интеграции
