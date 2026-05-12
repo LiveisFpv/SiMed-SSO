@@ -53,7 +53,8 @@ public class ManageModel : PageModel
             Email = user.Email,
             EmailConfirmed = user.EmailConfirmed,
             PhoneNumber = user.PhoneNumber,
-            TwoFactorEnabled = user.TwoFactorEnabled
+            TwoFactorEnabled = user.TwoFactorEnabled,
+            RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user)
         };
 
         Sessions = await _userSessionService.GetUserSessionsAsync(

@@ -28,4 +28,9 @@ public class ApplicationSignInManager : SignInManager<ApplicationUser>
 
         return await base.PreSignInCheck(user);
     }
+
+    public Task<SignInResult> InitiateTwoFactorSignInAsync(ApplicationUser user, bool isPersistent)
+    {
+        return SignInOrTwoFactorAsync(user, isPersistent, loginProvider: null, bypassTwoFactor: false);
+    }
 }

@@ -76,6 +76,7 @@ public sealed class ManageAccountViewModel
     public bool EmailConfirmed { get; set; }
     public string? PhoneNumber { get; set; }
     public bool TwoFactorEnabled { get; set; }
+    public int RecoveryCodesLeft { get; set; }
 }
 
 public sealed class ChangePasswordViewModel
@@ -101,4 +102,41 @@ public sealed class ChangeEmailViewModel
     [Required]
     [EmailAddress]
     public string NewEmail { get; set; } = string.Empty;
+}
+
+public sealed class LoginWith2faViewModel
+{
+    [Required]
+    [Display(Name = "Authenticator code")]
+    public string TwoFactorCode { get; set; } = string.Empty;
+
+    [Display(Name = "Remember this browser")]
+    public bool RememberMachine { get; set; }
+
+    public bool RememberMe { get; set; }
+    public string? ReturnUrl { get; set; }
+}
+
+public sealed class LoginWithRecoveryCodeViewModel
+{
+    [Required]
+    [Display(Name = "Recovery code")]
+    public string RecoveryCode { get; set; } = string.Empty;
+
+    public string? ReturnUrl { get; set; }
+}
+
+public sealed class EnableAuthenticatorViewModel
+{
+    [Required]
+    [Display(Name = "Authenticator code")]
+    public string VerificationCode { get; set; } = string.Empty;
+}
+
+public sealed class ConfirmPasswordViewModel
+{
+    [Required]
+    [DataType(DataType.Password)]
+    [Display(Name = "Current password")]
+    public string CurrentPassword { get; set; } = string.Empty;
 }

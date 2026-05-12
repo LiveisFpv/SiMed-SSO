@@ -11,6 +11,7 @@
         <p class="text-muted mb-0">@Model.Account.Email</p>
     </div>
     <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" asp-page="/Account/Manage/Mfa">MFA</a>
         <a class="btn btn-outline-primary" asp-page="/Account/ChangeEmail">Change email</a>
         <a class="btn btn-outline-primary" asp-page="/Account/ChangePassword">Change password</a>
     </div>
@@ -36,7 +37,20 @@
 
     <dt class="col-sm-3">MFA enabled</dt>
     <dd class="col-sm-9">@(Model.Account.TwoFactorEnabled ? "Yes" : "No")</dd>
+
+    <dt class="col-sm-3">Recovery codes left</dt>
+    <dd class="col-sm-9">@Model.Account.RecoveryCodesLeft</dd>
 </dl>
+
+<div class="border-top pt-4 mt-4">
+    <div class="d-flex align-items-center justify-content-between">
+        <div>
+            <h2 class="h5 mb-1">Multi-factor authentication</h2>
+            <p class="text-muted mb-0">Use an authenticator app to protect account sign-in.</p>
+        </div>
+        <a class="btn btn-outline-primary" asp-page="/Account/Manage/Mfa">Manage MFA</a>
+    </div>
+</div>
 
 <div class="border-top pt-4 mt-4">
     <div class="d-flex align-items-center justify-content-between mb-3">

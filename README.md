@@ -41,7 +41,7 @@ SiMed-SSO — SSO-сервис для интеграции внутренних 
 - [x] OAuth2/OIDC Authorization Code Flow
 - [x] Discovery, JWKS, UserInfo
 - [x] Production-настройка signing/encryption certificates
-- [ ] MFA
+- [x] MFA
 - [ ] Audit log
 - [ ] Подробная документация API
 - [ ] Клиентское приложение как пример интеграции

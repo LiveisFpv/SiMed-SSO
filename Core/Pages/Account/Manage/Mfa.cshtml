@@ -1,0 +1,115 @@
+@page
+@model MfaModel
+
+@{
+    ViewData["Title"] = "Multi-factor authentication";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Multi-factor authentication</h1>
+        <p class="text-muted mb-0">Protect account sign-in with an authenticator app.</p>
+    </div>
+    <a class="btn btn-outline-secondary" asp-page="/Account/Manage">Back to account</a>
+</div>
+
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div class="alert alert-success" role="alert">@statusMessage</div>
+}
+
+@if (Model.RecoveryCodes.Count > 0)
+{
+    <div class="alert alert-warning" role="alert">
+        <strong>Save these recovery codes now.</strong>
+        They will not be shown again.
+    </div>
+    <div class="row row-cols-1 row-cols-md-2 g-2 mb-4">
+        @foreach (var code in Model.RecoveryCodes)
+        {
+            <div class="col">
+                <code class="d-block border rounded p-2">@code</code>
+            </div>
+        }
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <section class="mb-4">
+            <h2 class="h5">Status</h2>
+            <dl class="row mb-0">
+                <dt class="col-sm-4">MFA enabled</dt>
+                <dd class="col-sm-8">@(Model.IsMfaEnabled ? "Yes" : "No")</dd>
+
+                <dt class="col-sm-4">Recovery codes left</dt>
+                <dd class="col-sm-8">@Model.RecoveryCodesLeft</dd>
+            </dl>
+        </section>
+
+        @if (!Model.IsMfaEnabled)
+        {
+            <section class="border-top pt-4">
+                <h2 class="h5">Enable authenticator app</h2>
+                <div class="mb-3" style="max-width: 220px;">
+                    @Html.Raw(Model.QrCodeSvg)
+                </div>
+                <p class="text-muted">Manual setup key</p>
+                <code class="d-block border rounded p-2 mb-3">@Model.SharedKey</code>
+
+                <form method="post" asp-page-handler="Enable">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    <div class="mb-3">
+                        <label asp-for="EnableInput.VerificationCode" class="form-label"></label>
+                        <input asp-for="EnableInput.VerificationCode" class="form-control" autocomplete="one-time-code" inputmode="numeric" />
+                        <span asp-validation-for="EnableInput.VerificationCode" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Enable MFA</button>
+                </form>
+            </section>
+        }
+        else
+        {
+            <section class="border-top pt-4">
+                <h2 class="h5">Recovery codes</h2>
+                @if (Model.RecoveryCodesLeft == 0)
+                {
+                    <div class="alert alert-warning" role="alert">You have no recovery codes left.</div>
+                }
+                <form method="post" asp-page-handler="GenerateRecoveryCodes">
+                    <button type="submit" class="btn btn-outline-primary">Generate new recovery codes</button>
+                </form>
+            </section>
+        }
+    </div>
+
+    <div class="col-lg-5">
+        <section class="border-top pt-4 mb-4">
+            <h2 class="h5">Disable MFA</h2>
+            <form method="post" asp-page-handler="Disable">
+                <div class="mb-3">
+                    <label asp-for="PasswordInput.CurrentPassword" class="form-label"></label>
+                    <input asp-for="PasswordInput.CurrentPassword" class="form-control" autocomplete="current-password" />
+                    <span asp-validation-for="PasswordInput.CurrentPassword" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-outline-danger" disabled="@(!Model.IsMfaEnabled)">Disable MFA</button>
+            </form>
+        </section>
+
+        <section class="border-top pt-4">
+            <h2 class="h5">Reset authenticator</h2>
+            <form method="post" asp-page-handler="ResetAuthenticator">
+                <div class="mb-3">
+                    <label asp-for="PasswordInput.CurrentPassword" class="form-label"></label>
+                    <input asp-for="PasswordInput.CurrentPassword" class="form-control" autocomplete="current-password" />
+                    <span asp-validation-for="PasswordInput.CurrentPassword" class="text-danger"></span>
+                </div>
+                <button type="submit" class="btn btn-outline-danger">Reset authenticator key</button>
+            </form>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
