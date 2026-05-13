@@ -1,0 +1,36 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Главная";
+}
+
+<div class="py-4">
+    <h1 class="h3 mb-3">SiMed SSO Sample Client</h1>
+    <p class="text-muted">
+        Демо-приложение показывает вход через SiMed SSO по Authorization Code Flow with PKCE.
+    </p>
+
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <div class="alert alert-success" role="alert">
+            Вы вошли как <strong>@(User.Identity.Name ?? "пользователь")</strong>.
+        </div>
+
+        <div class="d-flex gap-2">
+            <a class="btn btn-primary" asp-page="/Profile">Открыть профиль</a>
+            <form method="post" asp-page-handler="Logout">
+                <button type="submit" class="btn btn-outline-secondary">Выйти из demo-client</button>
+            </form>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-info" role="alert">
+            Вход выполняется на стороне SiMed SSO. После consent пользователь вернется в это приложение.
+        </div>
+
+        <form method="post" asp-page-handler="Login">
+            <button type="submit" class="btn btn-primary">Войти через SiMed SSO</button>
+        </form>
+    }
+</div>

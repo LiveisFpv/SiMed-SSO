@@ -1,0 +1,22 @@
+@page
+@model ErrorModel
+@{
+    ViewData["Title"] = "Ошибка";
+}
+
+<h1 class="h3 text-danger">Ошибка</h1>
+<p class="text-muted">Во время обработки запроса demo-client произошла ошибка.</p>
+
+@if (Model.ShowRequestId)
+{
+    <p>
+        <strong>Request ID:</strong> <code>@Model.RequestId</code>
+    </p>
+}
+
+@if (Model.ShowDetails)
+{
+    <div class="alert alert-warning" role="alert">
+        В Development можно смотреть подробности в логах приложения и консоли запуска.
+    </div>
+}

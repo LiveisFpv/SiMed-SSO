@@ -1,0 +1,84 @@
+@page
+@model ProfileModel
+@{
+    ViewData["Title"] = "Профиль";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+        <h1 class="h3 mb-1">Профиль из SiMed SSO</h1>
+        <p class="text-muted mb-0">Claims, token summary и UserInfo response текущего входа.</p>
+    </div>
+    <form method="post" asp-page="/Index" asp-page-handler="Logout">
+        <button type="submit" class="btn btn-outline-secondary">Выйти из demo-client</button>
+    </form>
+</div>
+
+<section class="mb-4">
+    <h2 class="h5">Tokens</h2>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Token</th>
+                    <th>Есть</th>
+                    <th>Длина</th>
+                    <th>Preview</th>
+                    <th>Expires at</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var token in Model.Tokens)
+                {
+                    <tr>
+                        <td><code>@token.Name</code></td>
+                        <td>@(token.IsPresent ? "Да" : "Нет")</td>
+                        <td>@token.Length</td>
+                        <td><code>@token.Preview</code></td>
+                        <td>@(token.ExpiresAt ?? "-")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">UserInfo</h2>
+    @if (Model.UserInfo is null)
+    {
+        <div class="alert alert-warning" role="alert">Access token отсутствует, UserInfo не вызван.</div>
+    }
+    else
+    {
+        <div class="mb-2">
+            <span class="badge @(Model.UserInfo.IsSuccess ? "text-bg-success" : "text-bg-danger")">
+                HTTP @Model.UserInfo.StatusCode
+            </span>
+        </div>
+        <pre class="border rounded p-3 bg-light"><code>@Model.UserInfo.Body</code></pre>
+    }
+</section>
+
+<section>
+    <h2 class="h5">Claims</h2>
+    <div class="table-responsive">
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var claim in Model.Claims)
+                {
+                    <tr>
+                        <td><code>@claim.Type</code></td>
+                        <td>@claim.Value</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
