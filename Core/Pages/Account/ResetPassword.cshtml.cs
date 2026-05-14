@@ -1,6 +1,7 @@
 using System.Text;
 using Core.Models;
 using Core.Models.Account;
+using Core.Services.Sessions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,14 @@ namespace Core.Pages.Account;
 public class ResetPasswordModel : PageModel
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUserSessionService _userSessionService;
 
-    public ResetPasswordModel(UserManager<ApplicationUser> userManager)
+    public ResetPasswordModel(
+        UserManager<ApplicationUser> userManager,
+        IUserSessionService userSessionService)
     {
         _userManager = userManager;
+        _userSessionService = userSessionService;
     }
 
     [BindProperty]
@@ -50,6 +55,7 @@ public class ResetPasswordModel : PageModel
         var result = await _userManager.ResetPasswordAsync(user, DecodeToken(Input.Code), Input.Password);
         if (result.Succeeded)
         {
+            await _userSessionService.RevokeAllUserSessionsAsync(user, "Password reset", user.Id);
             return RedirectToPage("/Account/ResetPasswordConfirmation");
         }
 

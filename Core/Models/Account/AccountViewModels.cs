@@ -122,13 +122,14 @@ public sealed class ChangeEmailViewModel
 
 public sealed class LoginWith2faViewModel
 {
-    [Required(ErrorMessage = "Укажите код из приложения.")]
-    [Display(Name = "Код из приложения")]
+    [Required(ErrorMessage = "Укажите код MFA.")]
+    [Display(Name = "Код MFA")]
     public string TwoFactorCode { get; set; } = string.Empty;
 
     [Display(Name = "Запомнить этот браузер")]
     public bool RememberMachine { get; set; }
 
+    public string? Provider { get; set; }
     public bool RememberMe { get; set; }
     public string? ReturnUrl { get; set; }
 }

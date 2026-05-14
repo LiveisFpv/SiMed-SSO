@@ -4,6 +4,7 @@ using Core.Middleware;
 using Core.Models;
 using Core.Options;
 using Core.Services.Email;
+using Core.Services.Mfa;
 using Core.Services.OAuth;
 using Core.Services.Sessions;
 using Microsoft.AspNetCore.Identity;
@@ -47,6 +48,7 @@ builder.Services.AddTransient<Microsoft.AspNetCore.Identity.IEmailSender<Applica
     services.GetRequiredService<IdentityEmailSender>());
 builder.Services.AddScoped<IUserSessionService, UserSessionService>();
 builder.Services.AddHostedService<UserSessionCleanupService>();
+builder.Services.AddScoped<IMfaMethodService, MfaMethodService>();
 builder.Services.AddScoped<IOAuthClientService, OAuthClientService>();
 builder.Services.AddScoped<OAuthClaimsPrincipalFactory>();
 
@@ -88,6 +90,8 @@ builder.Services.AddOpenIddict()
     {
         options.SetAuthorizationEndpointUris("/connect/authorize")
             .SetTokenEndpointUris("/connect/token")
+            .SetRevocationEndpointUris("/connect/revocation")
+            .SetIntrospectionEndpointUris("/connect/introspection")
             .SetConfigurationEndpointUris("/.well-known/openid-configuration")
             .SetJsonWebKeySetEndpointUris("/.well-known/jwks")
             .SetUserInfoEndpointUris("/connect/userinfo");

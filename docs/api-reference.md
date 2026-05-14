@@ -28,6 +28,8 @@ Discovery возвращает актуальные endpoint URLs, supported sco
 - `authorization_endpoint`
 - `token_endpoint`
 - `userinfo_endpoint`
+- `revocation_endpoint`
+- `introspection_endpoint`
 - `jwks_uri`
 - `scopes_supported`
 - `response_types_supported`
@@ -130,6 +132,50 @@ Response claims зависят от scopes:
 
 Inactive/deleted users отклоняются.
 
+## Revocation endpoint
+
+```http
+POST /connect/revocation
+Content-Type: application/x-www-form-urlencoded
+```
+
+Поля form body:
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `client_id` | yes | Client ID. |
+| `client_secret` | yes | Client secret. |
+| `token` | yes | Token для отзыва, обычно `refresh_token`. |
+| `token_type_hint` | no | Например `refresh_token`. |
+
+После успешного ответа token считается недействительным. Повторный отзыв уже недействительного token не должен раскрывать лишние детали клиенту.
+
+## Introspection endpoint
+
+```http
+POST /connect/introspection
+Content-Type: application/x-www-form-urlencoded
+```
+
+Поля form body:
+
+| Field | Required | Description |
+| --- | --- | --- |
+| `client_id` | yes | Client ID. |
+| `client_secret` | yes | Client secret. |
+| `token` | yes | Token для проверки. |
+| `token_type_hint` | no | Например `access_token` или `refresh_token`. |
+
+Ключевое поле ответа:
+
+```json
+{
+  "active": true
+}
+```
+
+Для отозванного, просроченного или неверного token возвращается `active=false`.
+
 ## Scopes
 
 | Scope | Description |
@@ -157,6 +203,7 @@ Scopes должны быть разрешены для client в `/Admin/Clients
 | `invalid_grant` | Reused/expired code, wrong `code_verifier`, invalid refresh token. |
 | `invalid_scope` | Requested scope is not allowed for the client. |
 | `unauthorized_client` | Client is inactive or not allowed for the requested flow. |
+| `invalid_client` | Неверная client authentication на token/revocation/introspection endpoint. |
 
 ## OpenAPI stub
 

@@ -121,6 +121,30 @@ curl.exe -k -X POST https://localhost:7269/connect/token `
   -d "refresh_token=REFRESH_TOKEN"
 ```
 
+## Revocation и introspection
+
+Отзовите refresh token:
+
+```powershell
+curl.exe -k -X POST https://localhost:7269/connect/revocation `
+  -H "Content-Type: application/x-www-form-urlencoded" `
+  -d "client_id=CLIENT_ID" `
+  -d "client_secret=CLIENT_SECRET" `
+  -d "token=REFRESH_TOKEN"
+```
+
+Проверьте token через introspection:
+
+```powershell
+curl.exe -k -X POST https://localhost:7269/connect/introspection `
+  -H "Content-Type: application/x-www-form-urlencoded" `
+  -d "client_id=CLIENT_ID" `
+  -d "client_secret=CLIENT_SECRET" `
+  -d "token=ACCESS_OR_REFRESH_TOKEN"
+```
+
+Для отозванного или недействительного token ожидайте `active=false`.
+
 ## UserInfo
 
 Вызовите UserInfo с `access_token`:

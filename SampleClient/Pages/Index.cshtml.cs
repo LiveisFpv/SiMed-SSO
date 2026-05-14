@@ -22,9 +22,13 @@ public class IndexModel : PageModel
             OpenIdConnectDefaults.AuthenticationScheme);
     }
 
-    public async Task<IActionResult> OnPostLogoutAsync()
+    public IActionResult OnPostLogout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return RedirectToPage("/Index");
+        return SignOut(
+            new AuthenticationProperties
+            {
+                RedirectUri = Url.Page("/Index")
+            },
+            CookieAuthenticationDefaults.AuthenticationScheme);
     }
 }

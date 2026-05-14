@@ -8,26 +8,92 @@
 <div class="row justify-content-center">
     <div class="col-md-5">
         <h1 class="h3 mb-4">Двухфакторная проверка</h1>
-        <form method="post">
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-            <input asp-for="Input.ReturnUrl" type="hidden" />
-            <input asp-for="Input.RememberMe" type="hidden" />
 
-            <div class="mb-3">
-                <label asp-for="Input.TwoFactorCode" class="form-label"></label>
-                <input asp-for="Input.TwoFactorCode" class="form-control" autocomplete="one-time-code" inputmode="numeric" />
-                <span asp-validation-for="Input.TwoFactorCode" class="text-danger"></span>
+        @if (TempData["StatusMessage"] is string statusMessage)
+        {
+            <div class="alert alert-success" role="alert">@statusMessage</div>
+        }
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        @if (string.IsNullOrWhiteSpace(Model.SelectedProvider))
+        {
+            <p class="text-muted">Выберите способ подтверждения входа.</p>
+            <div class="d-grid gap-2">
+                @if (Model.AvailableProviders.Contains(TokenOptions.DefaultAuthenticatorProvider))
+                {
+                    <a class="btn btn-outline-primary"
+                       asp-page="/Account/LoginWith2fa"
+                       asp-route-returnUrl="@Model.Input.ReturnUrl"
+                       asp-route-rememberMe="@Model.Input.RememberMe"
+                       asp-route-provider="@TokenOptions.DefaultAuthenticatorProvider">
+                        Код из приложения
+                    </a>
+                }
+
+                @if (Model.AvailableProviders.Contains(TokenOptions.DefaultEmailProvider))
+                {
+                    <a class="btn btn-outline-primary"
+                       asp-page="/Account/LoginWith2fa"
+                       asp-route-returnUrl="@Model.Input.ReturnUrl"
+                       asp-route-rememberMe="@Model.Input.RememberMe"
+                       asp-route-provider="@TokenOptions.DefaultEmailProvider">
+                        Код на email
+                    </a>
+                }
             </div>
+        }
+        else
+        {
+            @if (Model.SelectedProvider == TokenOptions.DefaultEmailProvider)
+            {
+                <p class="text-muted">Введите код, отправленный на @Model.MaskedEmail.</p>
+            }
+            else
+            {
+                <p class="text-muted">Введите код из приложения-аутентификатора.</p>
+            }
 
-            <div class="form-check mb-3">
-                <input asp-for="Input.RememberMachine" class="form-check-input" />
-                <label asp-for="Input.RememberMachine" class="form-check-label"></label>
-            </div>
+            <form method="post">
+                <input asp-for="Input.ReturnUrl" type="hidden" />
+                <input asp-for="Input.RememberMe" type="hidden" />
+                <input asp-for="Input.Provider" type="hidden" />
 
-            <button type="submit" class="btn btn-primary w-100">Проверить</button>
-        </form>
+                <div class="mb-3">
+                    <label asp-for="Input.TwoFactorCode" class="form-label"></label>
+                    <input asp-for="Input.TwoFactorCode" class="form-control" autocomplete="one-time-code" inputmode="numeric" />
+                    <span asp-validation-for="Input.TwoFactorCode" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input asp-for="Input.RememberMachine" class="form-check-input" />
+                    <label asp-for="Input.RememberMachine" class="form-check-label"></label>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Проверить</button>
+            </form>
+
+            @if (Model.SelectedProvider == TokenOptions.DefaultEmailProvider)
+            {
+                <form class="mt-2" method="post" asp-page-handler="SendEmailCode">
+                    <input asp-for="Input.ReturnUrl" type="hidden" />
+                    <input asp-for="Input.RememberMe" type="hidden" />
+                    <button type="submit" class="btn btn-link p-0">Отправить код повторно</button>
+                </form>
+            }
+        }
 
         <div class="mt-3">
+            @if (Model.AvailableProviders.Count > 1 && !string.IsNullOrWhiteSpace(Model.SelectedProvider))
+            {
+                <div>
+                    <a asp-page="/Account/LoginWith2fa"
+                       asp-route-returnUrl="@Model.Input.ReturnUrl"
+                       asp-route-rememberMe="@Model.Input.RememberMe">
+                        Выбрать другой MFA-метод
+                    </a>
+                </div>
+            }
             <a asp-page="/Account/LoginWithRecoveryCode" asp-route-returnUrl="@Model.Input.ReturnUrl">Использовать recovery code</a>
         </div>
     </div>

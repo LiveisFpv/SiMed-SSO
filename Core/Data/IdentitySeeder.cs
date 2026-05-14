@@ -1,6 +1,8 @@
 using Core.Identity;
 using Core.Models;
 using Microsoft.AspNetCore.Identity;
+using OpenIddict.Abstractions;
+using static OpenIddict.Abstractions.OpenIddictConstants;
 
 namespace Core.Data;
 
@@ -12,6 +14,7 @@ public static class IdentitySeeder
 
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
         var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+        var applicationManager = scope.ServiceProvider.GetRequiredService<IOpenIddictApplicationManager>();
 
         foreach (var role in ApplicationRoles.All)
         {
@@ -30,6 +33,7 @@ public static class IdentitySeeder
 
         if (string.IsNullOrWhiteSpace(adminEmail) || string.IsNullOrWhiteSpace(adminPassword))
         {
+            await EnsureOAuthClientEndpointPermissionsAsync(applicationManager);
             return;
         }
 
@@ -57,6 +61,33 @@ public static class IdentitySeeder
             if (!addRoleResult.Succeeded)
             {
                 throw new InvalidOperationException($"Failed to add admin role to '{adminEmail}': {FormatErrors(addRoleResult)}");
+            }
+        }
+
+        await EnsureOAuthClientEndpointPermissionsAsync(applicationManager);
+    }
+
+    private static async Task EnsureOAuthClientEndpointPermissionsAsync(IOpenIddictApplicationManager applicationManager)
+    {
+        await foreach (var application in applicationManager.ListAsync(count: null, offset: null))
+        {
+            var descriptor = new OpenIddictApplicationDescriptor();
+            await applicationManager.PopulateAsync(descriptor, application);
+
+            var isActive = descriptor.Permissions.Contains(Permissions.Endpoints.Authorization) &&
+                descriptor.Permissions.Contains(Permissions.Endpoints.Token);
+            if (!isActive)
+            {
+                continue;
+            }
+
+            var changed = false;
+            changed |= descriptor.Permissions.Add(Permissions.Endpoints.Revocation);
+            changed |= descriptor.Permissions.Add(Permissions.Endpoints.Introspection);
+
+            if (changed)
+            {
+                await applicationManager.UpdateAsync(application, descriptor);
             }
         }
     }

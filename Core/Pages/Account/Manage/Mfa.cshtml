@@ -8,7 +8,7 @@
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
         <h1 class="h3 mb-1">Многофакторная аутентификация</h1>
-        <p class="text-muted mb-0">Защитите вход в аккаунт через приложение-аутентификатор.</p>
+        <p class="text-muted mb-0">Защитите вход в аккаунт через приложение-аутентификатор, email-код или recovery codes.</p>
     </div>
     <a class="btn btn-outline-secondary" asp-page="/Account/Manage">Назад к аккаунту</a>
 </div>
@@ -42,12 +42,18 @@
                 <dt class="col-sm-4">MFA включена</dt>
                 <dd class="col-sm-8">@(Model.IsMfaEnabled ? "Да" : "Нет")</dd>
 
+                <dt class="col-sm-4">Приложение-аутентификатор</dt>
+                <dd class="col-sm-8">@(Model.IsAuthenticatorEnabled ? "Подключено" : "Не подключено")</dd>
+
+                <dt class="col-sm-4">Email MFA</dt>
+                <dd class="col-sm-8">@(Model.IsEmailMfaEnabled ? "Включена" : "Отключена")</dd>
+
                 <dt class="col-sm-4">Осталось recovery codes</dt>
                 <dd class="col-sm-8">@Model.RecoveryCodesLeft</dd>
             </dl>
         </section>
 
-        @if (!Model.IsMfaEnabled)
+        @if (!Model.IsAuthenticatorEnabled)
         {
             <section class="border-top pt-4">
                 <h2 class="h5">Подключить приложение-аутентификатор</h2>
@@ -71,6 +77,11 @@
         else
         {
             <section class="border-top pt-4">
+                <h2 class="h5">Приложение-аутентификатор</h2>
+                <p class="text-muted">Приложение-аутентификатор подключено и может использоваться при входе.</p>
+            </section>
+
+            <section class="border-top pt-4">
                 <h2 class="h5">Recovery codes</h2>
                 @if (Model.RecoveryCodesLeft == 0)
                 {
@@ -84,6 +95,43 @@
     </div>
 
     <div class="col-lg-5">
+        <section class="border-top pt-4 mb-4">
+            <h2 class="h5">MFA через email</h2>
+            @if (!Model.IsEmailConfirmed)
+            {
+                <div class="alert alert-warning" role="alert">
+                    Email должен быть подтвержден, чтобы использовать MFA-коды по почте.
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">Коды будут отправляться на @Model.Email.</p>
+            }
+
+            @if (!Model.IsEmailMfaEnabled)
+            {
+                <form method="post" asp-page-handler="EnableEmail">
+                    <div class="mb-3">
+                        <label asp-for="PasswordInput.CurrentPassword" class="form-label"></label>
+                        <input asp-for="PasswordInput.CurrentPassword" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="PasswordInput.CurrentPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary" disabled="@(!Model.IsEmailConfirmed)">Включить email MFA</button>
+                </form>
+            }
+            else
+            {
+                <form method="post" asp-page-handler="DisableEmail">
+                    <div class="mb-3">
+                        <label asp-for="PasswordInput.CurrentPassword" class="form-label"></label>
+                        <input asp-for="PasswordInput.CurrentPassword" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="PasswordInput.CurrentPassword" class="text-danger"></span>
+                    </div>
+                    <button type="submit" class="btn btn-outline-danger">Отключить email MFA</button>
+                </form>
+            }
+        </section>
+
         <section class="border-top pt-4 mb-4">
             <h2 class="h5">Отключить MFA</h2>
             <form method="post" asp-page-handler="Disable">

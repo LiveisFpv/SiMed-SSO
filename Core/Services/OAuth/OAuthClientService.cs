@@ -194,11 +194,15 @@ public sealed class OAuthClientService : IOAuthClientService
         {
             descriptor.Permissions.Add(Permissions.Endpoints.Authorization);
             descriptor.Permissions.Add(Permissions.Endpoints.Token);
+            descriptor.Permissions.Add(Permissions.Endpoints.Revocation);
+            descriptor.Permissions.Add(Permissions.Endpoints.Introspection);
         }
         else
         {
             descriptor.Permissions.Remove(Permissions.Endpoints.Authorization);
             descriptor.Permissions.Remove(Permissions.Endpoints.Token);
+            descriptor.Permissions.Remove(Permissions.Endpoints.Revocation);
+            descriptor.Permissions.Remove(Permissions.Endpoints.Introspection);
         }
 
         await _applicationManager.UpdateAsync(application, descriptor, cancellationToken);
@@ -298,6 +302,8 @@ public sealed class OAuthClientService : IOAuthClientService
         {
             permissions.Add(Permissions.Endpoints.Authorization);
             permissions.Add(Permissions.Endpoints.Token);
+            permissions.Add(Permissions.Endpoints.Revocation);
+            permissions.Add(Permissions.Endpoints.Introspection);
         }
 
         permissions.Add(Permissions.GrantTypes.AuthorizationCode);

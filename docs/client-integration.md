@@ -116,6 +116,30 @@ curl.exe -k https://localhost:7269/connect/userinfo `
 
 Минимальный response содержит `sub`. Claims `name`, `preferred_username`, `email`, `email_verified` зависят от granted scopes.
 
+## 9. Revocation и introspection
+
+Отзыв refresh token:
+
+```powershell
+curl.exe -k -X POST https://localhost:7269/connect/revocation `
+  -H "Content-Type: application/x-www-form-urlencoded" `
+  -d "client_id=CLIENT_ID" `
+  -d "client_secret=CLIENT_SECRET" `
+  -d "token=REFRESH_TOKEN"
+```
+
+Проверка token introspection:
+
+```powershell
+curl.exe -k -X POST https://localhost:7269/connect/introspection `
+  -H "Content-Type: application/x-www-form-urlencoded" `
+  -d "client_id=CLIENT_ID" `
+  -d "client_secret=CLIENT_SECRET" `
+  -d "token=ACCESS_OR_REFRESH_TOKEN"
+```
+
+Logout в клиентском приложении обычно очищает только локальную cookie клиента. SSO-сессия SiMed SSO остается активной, как в типичных внешних SSO-провайдерах.
+
 ## Integration checklist
 
 - `SSO_ISSUER` совпадает с публичным URL сервера.

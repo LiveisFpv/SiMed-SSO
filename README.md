@@ -20,11 +20,11 @@ SiMed-SSO - SSO-сервис для интеграции внутренних и
 - Роли `Admin` и `User`.
 - Админ-панель пользователей: список, карточка, роли, деактивация и реактивация.
 - Управление cookie-сессиями пользователя.
-- MFA через authenticator app и recovery codes.
+- MFA через authenticator app, email-коды и recovery codes.
 - Реестр OAuth/OIDC clients в админ-панели.
 - Authorization Code Flow with PKCE.
 - `access_token`, `id_token`, rotating `refresh_token`.
-- Discovery metadata, JWKS и UserInfo endpoint.
+- Discovery metadata, JWKS, UserInfo, revocation и introspection endpoints.
 - `SampleClient` как пример интеграции confidential client.
 
 ## Документация

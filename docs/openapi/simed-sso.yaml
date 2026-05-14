@@ -160,6 +160,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OAuthError"
+  /connect/revocation:
+    post:
+      tags: [Tokens]
+      summary: Отзыв access_token или refresh_token
+      operationId: revokeToken
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/RevocationRequest"
+      responses:
+        "200":
+          description: Token отозван или уже недействителен.
+        "400":
+          description: OAuth revocation error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+  /connect/introspection:
+    post:
+      tags: [Tokens]
+      summary: Проверка активности token
+      operationId: introspectToken
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/IntrospectionRequest"
+      responses:
+        "200":
+          description: Introspection response.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IntrospectionResponse"
+        "400":
+          description: OAuth introspection error.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
 components:
   securitySchemes:
     bearerAuth:
@@ -180,6 +224,12 @@ components:
           type: string
           format: uri
         userinfo_endpoint:
+          type: string
+          format: uri
+        revocation_endpoint:
+          type: string
+          format: uri
+        introspection_endpoint:
           type: string
           format: uri
         jwks_uri:
@@ -280,6 +330,55 @@ components:
           format: email
         email_verified:
           type: boolean
+    RevocationRequest:
+      type: object
+      required:
+        - client_id
+        - client_secret
+        - token
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        token:
+          type: string
+        token_type_hint:
+          type: string
+          example: refresh_token
+    IntrospectionRequest:
+      type: object
+      required:
+        - client_id
+        - client_secret
+        - token
+      properties:
+        client_id:
+          type: string
+        client_secret:
+          type: string
+        token:
+          type: string
+        token_type_hint:
+          type: string
+          example: access_token
+    IntrospectionResponse:
+      type: object
+      required:
+        - active
+      properties:
+        active:
+          type: boolean
+        sub:
+          type: string
+        client_id:
+          type: string
+        scope:
+          type: string
+        exp:
+          type: integer
+        iat:
+          type: integer
     OAuthError:
       type: object
       properties:

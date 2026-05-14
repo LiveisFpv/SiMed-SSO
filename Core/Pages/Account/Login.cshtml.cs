@@ -1,6 +1,7 @@
 using Core.Identity;
 using Core.Models;
 using Core.Models.Account;
+using Core.Services.Mfa;
 using Core.Services.Sessions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,15 +16,18 @@ public class LoginModel : PageModel
     private readonly ApplicationSignInManager _signInManager;
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IUserSessionService _userSessionService;
+    private readonly IMfaMethodService _mfaMethodService;
 
     public LoginModel(
         ApplicationSignInManager signInManager,
         UserManager<ApplicationUser> userManager,
-        IUserSessionService userSessionService)
+        IUserSessionService userSessionService,
+        IMfaMethodService mfaMethodService)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _userSessionService = userSessionService;
+        _mfaMethodService = mfaMethodService;
     }
 
     [BindProperty]
@@ -52,14 +56,20 @@ public class LoginModel : PageModel
 
         if (result.Succeeded)
         {
-            if (await RequiresTwoFactorAsync(user))
+            var twoFactorProviders = await GetEnabledTwoFactorProvidersAsync(user);
+            if (twoFactorProviders.Count > 0)
             {
                 var twoFactorResult = await _signInManager.InitiateTwoFactorSignInAsync(user, Input.RememberMe);
                 if (twoFactorResult.RequiresTwoFactor)
                 {
                     return RedirectToPage(
                         "/Account/LoginWith2fa",
-                        new { returnUrl = Input.ReturnUrl, rememberMe = Input.RememberMe });
+                        new
+                        {
+                            returnUrl = Input.ReturnUrl,
+                            rememberMe = Input.RememberMe,
+                            provider = twoFactorProviders.Count == 1 ? twoFactorProviders.Single() : null
+                        });
                 }
             }
 
@@ -81,19 +91,18 @@ public class LoginModel : PageModel
         return RedirectToPage("/Index");
     }
 
-    private async Task<bool> RequiresTwoFactorAsync(ApplicationUser user)
+    private async Task<IReadOnlyCollection<string>> GetEnabledTwoFactorProvidersAsync(ApplicationUser user)
     {
         if (!await _userManager.GetTwoFactorEnabledAsync(user))
         {
-            return false;
+            return [];
         }
 
         if (await _signInManager.IsTwoFactorClientRememberedAsync(user))
         {
-            return false;
+            return [];
         }
 
-        var providers = await _userManager.GetValidTwoFactorProvidersAsync(user);
-        return providers.Contains(TokenOptions.DefaultAuthenticatorProvider);
+        return await _mfaMethodService.GetEnabledProvidersAsync(user);
     }
 }

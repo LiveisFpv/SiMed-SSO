@@ -1,6 +1,7 @@
 using System.Text;
 using Core.Models;
 using Core.Models.Account;
+using Core.Services.Mfa;
 using Core.Services.Sessions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -17,15 +18,18 @@ public class MfaModel : PageModel
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly IUserSessionService _userSessionService;
+    private readonly IMfaMethodService _mfaMethodService;
 
     public MfaModel(
         UserManager<ApplicationUser> userManager,
         SignInManager<ApplicationUser> signInManager,
-        IUserSessionService userSessionService)
+        IUserSessionService userSessionService,
+        IMfaMethodService mfaMethodService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _userSessionService = userSessionService;
+        _mfaMethodService = mfaMethodService;
     }
 
     [BindProperty]
@@ -35,7 +39,11 @@ public class MfaModel : PageModel
     public ConfirmPasswordViewModel PasswordInput { get; set; } = new();
 
     public bool IsMfaEnabled { get; private set; }
+    public bool IsAuthenticatorEnabled { get; private set; }
+    public bool IsEmailMfaEnabled { get; private set; }
+    public bool IsEmailConfirmed { get; private set; }
     public int RecoveryCodesLeft { get; private set; }
+    public string Email { get; private set; } = string.Empty;
     public string SharedKey { get; private set; } = string.Empty;
     public string AuthenticatorUri { get; private set; } = string.Empty;
     public string QrCodeSvg { get; private set; } = string.Empty;
@@ -80,12 +88,73 @@ public class MfaModel : PageModel
             return Page();
         }
 
+        await _mfaMethodService.SetAuthenticatorEnabledAsync(user, isEnabled: true);
         var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
         RecoveryCodes = recoveryCodes?.ToArray() ?? [];
         await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
         TempData["StatusMessage"] = "MFA включена. Сохраните recovery codes сейчас.";
         await LoadAsync(user);
         return Page();
+    }
+
+    public async Task<IActionResult> OnPostEnableEmailAsync()
+    {
+        var user = await GetCurrentUserAsync();
+        if (!await ValidateCurrentPasswordAsync(user))
+        {
+            await LoadAsync(user);
+            return Page();
+        }
+
+        if (!await _userManager.IsEmailConfirmedAsync(user))
+        {
+            ModelState.AddModelError(string.Empty, "MFA через email доступна только после подтверждения email.");
+            await LoadAsync(user);
+            return Page();
+        }
+
+        var enableResult = await _userManager.SetTwoFactorEnabledAsync(user, true);
+        if (!enableResult.Succeeded)
+        {
+            AddIdentityErrors(enableResult);
+            await LoadAsync(user);
+            return Page();
+        }
+
+        await _mfaMethodService.SetEmailEnabledAsync(user, isEnabled: true);
+
+        if (await _userManager.CountRecoveryCodesAsync(user) == 0)
+        {
+            var recoveryCodes = await _userManager.GenerateNewTwoFactorRecoveryCodesAsync(user, 10);
+            RecoveryCodes = recoveryCodes?.ToArray() ?? [];
+        }
+
+        await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
+        TempData["StatusMessage"] = "MFA через email включена.";
+        await LoadAsync(user);
+        return Page();
+    }
+
+    public async Task<IActionResult> OnPostDisableEmailAsync()
+    {
+        var user = await GetCurrentUserAsync();
+        if (!await ValidateCurrentPasswordAsync(user))
+        {
+            await LoadAsync(user);
+            return Page();
+        }
+
+        await _mfaMethodService.SetEmailEnabledAsync(user, isEnabled: false);
+
+        if (!await _mfaMethodService.IsAuthenticatorEnabledAsync(user))
+        {
+            await _userManager.SetTwoFactorEnabledAsync(user, false);
+            await _signInManager.ForgetTwoFactorClientAsync();
+        }
+
+        await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
+        TempData["StatusMessage"] = "MFA через email отключена.";
+        return RedirectToPage();
     }
 
     public async Task<IActionResult> OnPostGenerateRecoveryCodesAsync()
@@ -120,6 +189,7 @@ public class MfaModel : PageModel
             return Page();
         }
 
+        await _mfaMethodService.DisableAllAsync(user);
         await _signInManager.ForgetTwoFactorClientAsync();
         await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
         TempData["StatusMessage"] = "MFA отключена.";
@@ -135,8 +205,9 @@ public class MfaModel : PageModel
             return Page();
         }
 
-        await _userManager.SetTwoFactorEnabledAsync(user, false);
+        await _mfaMethodService.SetAuthenticatorEnabledAsync(user, isEnabled: false);
         await _userManager.ResetAuthenticatorKeyAsync(user);
+        await _userManager.SetTwoFactorEnabledAsync(user, await _mfaMethodService.IsEmailEnabledAsync(user));
         await _signInManager.ForgetTwoFactorClientAsync();
         await _userSessionService.RefreshSignInWithCurrentSessionAsync(HttpContext, user);
         TempData["StatusMessage"] = "Authenticator key сброшен. Настройте MFA заново, чтобы включить ее.";
@@ -148,9 +219,13 @@ public class MfaModel : PageModel
         await EnsureAuthenticatorKeyAsync(user);
 
         IsMfaEnabled = await _userManager.GetTwoFactorEnabledAsync(user);
+        IsAuthenticatorEnabled = await _mfaMethodService.IsAuthenticatorEnabledAsync(user);
+        IsEmailMfaEnabled = await _mfaMethodService.IsEmailEnabledAsync(user);
+        IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
         RecoveryCodesLeft = await _userManager.CountRecoveryCodesAsync(user);
 
         var email = await _userManager.GetEmailAsync(user) ?? await _userManager.GetUserNameAsync(user) ?? user.Id;
+        Email = email;
         var key = await _userManager.GetAuthenticatorKeyAsync(user) ?? string.Empty;
 
         SharedKey = FormatKey(key);
