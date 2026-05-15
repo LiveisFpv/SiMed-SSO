@@ -1,0 +1,26 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: SiMed-postgres-sample
+    restart: unless-stopped
+    ports:
+      - "${SAMPLE_POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${SAMPLE_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${SAMPLE_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${SAMPLE_POSTGRES_DB}
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${SAMPLE_POSTGRES_USER}"]
+      interval: 5s
+      retries: 10
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - storage_net
+  
+volumes:
+  pgdata:
+
+networks:
+  storage_net:
+    driver: bridge

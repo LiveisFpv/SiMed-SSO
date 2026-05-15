@@ -69,7 +69,13 @@ public static class IdentitySeeder
 
     private static async Task EnsureOAuthClientEndpointPermissionsAsync(IOpenIddictApplicationManager applicationManager)
     {
+        var applications = new List<object>();
         await foreach (var application in applicationManager.ListAsync(count: null, offset: null))
+        {
+            applications.Add(application);
+        }
+
+        foreach (var application in applications)
         {
             var descriptor = new OpenIddictApplicationDescriptor();
             await applicationManager.PopulateAsync(descriptor, application);

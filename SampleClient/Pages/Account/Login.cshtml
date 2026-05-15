@@ -1,0 +1,57 @@
+@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Вход";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <h1 class="h3 mb-4">Вход в SampleClient</h1>
+
+        @if (TempData["StatusMessage"] is string statusMessage)
+        {
+            <div class="alert alert-info" role="alert">@statusMessage</div>
+        }
+
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <input asp-for="Input.ReturnUrl" type="hidden" />
+
+            <div class="mb-3">
+                <label asp-for="Input.Email" class="form-label"></label>
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" />
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.Password" class="form-label"></label>
+                <input asp-for="Input.Password" class="form-control" autocomplete="current-password" />
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-check mb-3">
+                <input asp-for="Input.RememberMe" class="form-check-input" />
+                <label asp-for="Input.RememberMe" class="form-check-label"></label>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Войти</button>
+        </form>
+
+        <form class="mt-3" method="post" asp-page="/Account/ExternalLogin">
+            <input name="provider" type="hidden" value="@SampleClientAuthenticationSchemes.SiMedSso" />
+            <input name="returnUrl" type="hidden" value="@Model.Input.ReturnUrl" />
+            <button type="submit" class="btn btn-outline-primary w-100">Войти через SiMed SSO</button>
+        </form>
+
+        <div class="mt-3">
+            <a asp-page="/Account/Register" asp-route-returnUrl="@Model.Input.ReturnUrl">Создать локальный аккаунт</a>
+            <span class="text-muted"> · </span>
+            <a asp-page="/Account/ResendEmailConfirmation">Повторить подтверждение email</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

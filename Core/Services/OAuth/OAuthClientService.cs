@@ -25,9 +25,15 @@ public sealed class OAuthClientService : IOAuthClientService
     public async Task<IReadOnlyCollection<OAuthClientListItemViewModel>> GetClientsAsync(
         CancellationToken cancellationToken = default)
     {
+        var applications = new List<object>();
+        await foreach (var application in _applicationManager.ListAsync(count: null, offset: null, cancellationToken))
+        {
+            applications.Add(application);
+        }
+
         var clients = new List<OAuthClientListItemViewModel>();
 
-        await foreach (var application in _applicationManager.ListAsync(count: null, offset: null, cancellationToken))
+        foreach (var application in applications)
         {
             var permissions = await _applicationManager.GetPermissionsAsync(application, cancellationToken);
             clients.Add(new OAuthClientListItemViewModel

@@ -2,7 +2,7 @@
 
 Этот документ описывает базовую интеграцию клиентского приложения с SiMed SSO.
 
-Готовый server-rendered пример находится в [SampleClient](sample-client.md).
+Готовый server-rendered шаблон с локальными пользователями, собственной БД и входом через SiMed SSO находится в [SampleClient](sample-client.md).
 
 ## 1. Зарегистрируйте client
 
@@ -138,7 +138,7 @@ curl.exe -k -X POST https://localhost:7269/connect/introspection `
   -d "token=ACCESS_OR_REFRESH_TOKEN"
 ```
 
-Logout в клиентском приложении обычно очищает только локальную cookie клиента. SSO-сессия SiMed SSO остается активной, как в типичных внешних SSO-провайдерах.
+Logout в клиентском приложении очищает только локальную cookie клиента. SSO-сессия SiMed SSO остается активной, как в типичных внешних SSO-провайдерах.
 
 ## Integration checklist
 

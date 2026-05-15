@@ -6,16 +6,51 @@
 
 <div class="d-flex align-items-center justify-content-between mb-4">
     <div>
-        <h1 class="h3 mb-1">Профиль из SiMed SSO</h1>
-        <p class="text-muted mb-0">Claims, token summary и UserInfo response текущего входа.</p>
+        <h1 class="h3 mb-1">Профиль SampleClient</h1>
+        <p class="text-muted mb-0">Локальный пользователь, связка с SiMed SSO, token summary и UserInfo.</p>
     </div>
-    <form method="post" asp-page="/Index" asp-page-handler="Logout">
-        <button type="submit" class="btn btn-outline-secondary">Выйти из demo-client</button>
+    <form method="post" asp-page="/Account/Logout">
+        <button type="submit" class="btn btn-outline-secondary">Выйти</button>
     </form>
 </div>
 
+@if (Model.LocalUser is not null)
+{
+    <section class="mb-4">
+        <h2 class="h5">Локальный пользователь</h2>
+        <dl class="row mb-0">
+            <dt class="col-sm-3">ID</dt>
+            <dd class="col-sm-9"><code>@Model.LocalUser.Id</code></dd>
+
+            <dt class="col-sm-3">Email</dt>
+            <dd class="col-sm-9">@Model.LocalUser.Email</dd>
+
+            <dt class="col-sm-3">Имя</dt>
+            <dd class="col-sm-9">@(Model.LocalUser.DisplayName ?? "-")</dd>
+
+            <dt class="col-sm-3">Email подтвержден</dt>
+            <dd class="col-sm-9">@(Model.LocalUser.EmailConfirmed ? "Да" : "Нет")</dd>
+
+            <dt class="col-sm-3">Локальный пароль</dt>
+            <dd class="col-sm-9">@(Model.LocalUser.HasPassword ? "Есть" : "Нет")</dd>
+
+            <dt class="col-sm-3">SiMed SSO</dt>
+            <dd class="col-sm-9">@(Model.LocalUser.HasSiMedSsoLogin ? "Привязан" : "Не привязан")</dd>
+
+            <dt class="col-sm-3">SSO subject</dt>
+            <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.LocalUser.SsoSubject) ? "-" : Model.LocalUser.SsoSubject)</dd>
+
+            <dt class="col-sm-3">Создан</dt>
+            <dd class="col-sm-9">@Model.LocalUser.CreatedAtUtc.UtcDateTime.ToString("u")</dd>
+
+            <dt class="col-sm-3">Последний вход</dt>
+            <dd class="col-sm-9">@(Model.LocalUser.LastLoginAtUtc?.UtcDateTime.ToString("u") ?? "-")</dd>
+        </dl>
+    </section>
+}
+
 <section class="mb-4">
-    <h2 class="h5">Tokens</h2>
+    <h2 class="h5">SSO tokens</h2>
     <div class="table-responsive">
         <table class="table table-sm align-middle">
             <thead>
@@ -47,7 +82,7 @@
     <h2 class="h5">UserInfo</h2>
     @if (Model.UserInfo is null)
     {
-        <div class="alert alert-warning" role="alert">Access token отсутствует, UserInfo не вызван.</div>
+        <div class="alert alert-warning" role="alert">Access token отсутствует. Войдите через SiMed SSO, чтобы вызвать UserInfo.</div>
     }
     else
     {

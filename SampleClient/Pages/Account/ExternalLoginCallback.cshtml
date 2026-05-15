@@ -1,0 +1,12 @@
+@page
+@model ExternalLoginCallbackModel
+
+@{
+    ViewData["Title"] = "Вход через SiMed SSO";
+}
+
+<div class="text-center py-5">
+    <h1 class="h3 mb-3">Вход через SiMed SSO</h1>
+    <p class="text-muted">@Model.StatusMessage</p>
+    <a class="btn btn-primary" asp-page="/Account/Login">К входу</a>
+</div>
