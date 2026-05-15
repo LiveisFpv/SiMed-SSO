@@ -8,6 +8,7 @@
 
 - Локальная регистрация и вход по email/password.
 - Опциональное подтверждение email для локальных пользователей.
+- Восстановление локального пароля через email reset link.
 - Вход через SiMed SSO по Authorization Code Flow with PKCE.
 - Автоматическое создание локального пользователя при первом SSO-входе.
 - Автоматическая привязка SSO к существующему локальному пользователю, если email от SSO подтвержден.
@@ -96,6 +97,8 @@ https://localhost:7290/
 3. Если `SAMPLECLIENT_REQUIRE_EMAIL_VERIFICATION=false`, пользователь войдет сразу.
 4. Если `SAMPLECLIENT_REQUIRE_EMAIL_VERIFICATION=true`, confirmation link будет залогирован в консоль SampleClient в Development.
 5. После подтверждения email можно войти через `/Account/Login`.
+
+Для восстановления локального пароля откройте `/Account/ForgotPassword`. В Development reset link логируется в консоль SampleClient. Ответ страницы generic: приложение не раскрывает, существует ли пользователь и подтвержден ли email.
 
 Production SMTP для SampleClient в V1 не добавлен: это отдельный hardening-шаг. Основной SiMed SSO SMTP при этом уже работает независимо.
 

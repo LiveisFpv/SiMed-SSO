@@ -53,3 +53,34 @@ public sealed class ResendConfirmationViewModel
     [Display(Name = "Email")]
     public string Email { get; set; } = string.Empty;
 }
+
+public sealed class ForgotPasswordViewModel
+{
+    [Required(ErrorMessage = "Укажите email.")]
+    [EmailAddress(ErrorMessage = "Укажите корректный email.")]
+    [Display(Name = "Email")]
+    public string Email { get; set; } = string.Empty;
+}
+
+public sealed class ResetPasswordViewModel
+{
+    [Required(ErrorMessage = "Укажите email.")]
+    [EmailAddress(ErrorMessage = "Укажите корректный email.")]
+    [Display(Name = "Email")]
+    public string Email { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Укажите новый пароль.")]
+    [StringLength(100, MinimumLength = 9, ErrorMessage = "Пароль должен быть от {2} до {1} символов.")]
+    [DataType(DataType.Password)]
+    [Display(Name = "Новый пароль")]
+    public string Password { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Подтвердите пароль.")]
+    [DataType(DataType.Password)]
+    [Compare(nameof(Password), ErrorMessage = "Пароли не совпадают.")]
+    [Display(Name = "Подтверждение пароля")]
+    public string ConfirmPassword { get; set; } = string.Empty;
+
+    [Required]
+    public string Code { get; set; } = string.Empty;
+}
