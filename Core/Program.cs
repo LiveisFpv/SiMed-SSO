@@ -7,6 +7,7 @@ using Core.Services.Email;
 using Core.Services.Mfa;
 using Core.Services.OAuth;
 using Core.Services.Sessions;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Core.Utils;
@@ -16,7 +17,6 @@ DbUtils.LoadDotEnv();
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddRazorPages();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -36,6 +36,22 @@ if (!builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(oidcOption
 {
     throw new InvalidOperationException("OIDC issuer was not configured. Set SSO_ISSUER in non-Development environments.");
 }
+
+ProductionReadinessValidator.Validate(
+    builder.Configuration,
+    builder.Environment,
+    connectionString,
+    smtpOptions,
+    oidcOptions);
+
+DataProtectionKeyOptions.AddConfiguredDataProtection(
+    builder.Services,
+    builder.Configuration,
+    builder.Environment);
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    ForwardedHeadersConfiguration.Configure(options, builder.Configuration));
+builder.Services.AddRateLimiter(Core.Options.RateLimitingOptions.Configure);
 
 builder.Services.AddSingleton(smtpOptions);
 builder.Services.AddSingleton(oidcOptions);
@@ -168,7 +184,9 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
+app.UseMiddleware<SecurityHeadersMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
@@ -192,10 +210,17 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseMiddleware<UserSessionTrackingMiddleware>();
 app.UseAuthorization();
+
+app.MapGet("/health/live", () => Results.Ok(new { status = "Healthy" }))
+    .AllowAnonymous();
+
+app.MapGet("/health/ready", GetReadinessAsync)
+    .AllowAnonymous();
 
 app.MapStaticAssets();
 
@@ -203,3 +228,62 @@ app.MapRazorPages()
     .WithStaticAssets();
 
 app.Run();
+
+static async Task<IResult> GetReadinessAsync(
+    ApplicationDbContext dbContext,
+    SmtpOptions smtpOptions,
+    OidcOptions oidcOptions,
+    IWebHostEnvironment environment,
+    CancellationToken cancellationToken)
+{
+    var checks = new Dictionary<string, object?>();
+    var healthy = true;
+
+    try
+    {
+        var canConnect = await dbContext.Database.CanConnectAsync(cancellationToken);
+        checks["database"] = canConnect ? "Healthy" : "Unhealthy";
+        healthy &= canConnect;
+
+        if (canConnect)
+        {
+            var pendingMigrations = (await dbContext.Database.GetPendingMigrationsAsync(cancellationToken)).ToArray();
+            checks["migrations"] = pendingMigrations.Length == 0
+                ? "Healthy"
+                : $"Unhealthy: pending migrations: {string.Join(", ", pendingMigrations)}";
+            healthy &= pendingMigrations.Length == 0;
+        }
+    }
+    catch (Exception exception)
+    {
+        checks["database"] = $"Unhealthy: {exception.GetType().Name}";
+        healthy = false;
+    }
+
+    if (environment.IsDevelopment())
+    {
+        checks["smtp"] = smtpOptions.IsConfigured ? "Configured" : "Development sender";
+        checks["oidcCertificates"] = "Development certificates";
+    }
+    else
+    {
+        checks["smtp"] = smtpOptions.IsConfigured ? "Healthy" : "Unhealthy";
+        healthy &= smtpOptions.IsConfigured;
+
+        try
+        {
+            using var signingCertificate = oidcOptions.LoadSigningCertificate(environment);
+            using var encryptionCertificate = oidcOptions.LoadEncryptionCertificate(environment);
+            checks["oidcCertificates"] = "Healthy";
+        }
+        catch (Exception exception)
+        {
+            checks["oidcCertificates"] = $"Unhealthy: {exception.GetType().Name}";
+            healthy = false;
+        }
+    }
+
+    return Results.Json(
+        new { status = healthy ? "Healthy" : "Unhealthy", checks },
+        statusCode: healthy ? StatusCodes.Status200OK : StatusCodes.Status503ServiceUnavailable);
+}

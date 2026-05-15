@@ -33,6 +33,7 @@ SiMed-SSO - SSO-сервис для интеграции внутренних и
 - [API reference](docs/api-reference.md) - публичный OIDC/API contract для интеграторов.
 - [Руководство по интеграции клиента](docs/client-integration.md) - регистрация client и интеграция Authorization Code Flow with PKCE.
 - [SampleClient](docs/sample-client.md) - запуск клиентского шаблона с собственной БД, локальными пользователями и входом через SiMed SSO.
+- [Production readiness](docs/production-readiness.md) - обязательные настройки для release candidate: secrets, Data Protection, reverse proxy, health checks и migrations.
 - [Production OIDC certificates](docs/oidc-production-certificates.md) - настройка signing/encryption certificates для Staging и Production.
 
 ## План разработки
@@ -50,4 +51,4 @@ SiMed-SSO - SSO-сервис для интеграции внутренних и
 - [x] Подробная документация API
 - [x] Русский UI и документация
 - [x] Клиентское приложение как пример интеграции
-- [ ] Audit log
+- [x] Production readiness RC

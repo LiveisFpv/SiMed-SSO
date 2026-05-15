@@ -41,6 +41,8 @@ SAMPLECLIENT_CLIENT_ID=simed_replace_with_client_id
 SAMPLECLIENT_CLIENT_SECRET=replace-with-client-secret
 SAMPLECLIENT_CALLBACK_PATH=/signin-oidc
 
+SAMPLECLIENT_DATA_PROTECTION_KEYS_PATH=/var/lib/simed-sampleclient/data-protection-keys
+
 SAMPLECLIENT_POSTGRES_HOST=localhost
 SAMPLECLIENT_POSTGRES_PORT=5432
 SAMPLECLIENT_POSTGRES_DATABASE=simed_sso_sample_client
@@ -48,6 +50,13 @@ SAMPLECLIENT_POSTGRES_USERNAME=postgres
 SAMPLECLIENT_POSTGRES_PASSWORD=postgres
 
 SAMPLECLIENT_REQUIRE_EMAIL_VERIFICATION=false
+
+SAMPLECLIENT_SMTP_HOST=smtp.gmail.com
+SAMPLECLIENT_SMTP_PORT=587
+SAMPLECLIENT_SMTP_USERNAME=user@mail.com
+SAMPLECLIENT_SMTP_PASSWORD=userpass
+SAMPLECLIENT_FROM_EMAIL=sampleclient@mail.com
+SAMPLECLIENT_FROM_NAME=SiMed SampleClient
 ```
 
 `SAMPLECLIENT_AUTHORITY` должен совпадать с `SSO_ISSUER` и discovery `issuer` основного SSO-сервера.
@@ -98,9 +107,7 @@ https://localhost:7290/
 4. Если `SAMPLECLIENT_REQUIRE_EMAIL_VERIFICATION=true`, confirmation link будет залогирован в консоль SampleClient в Development.
 5. После подтверждения email можно войти через `/Account/Login`.
 
-Для восстановления локального пароля откройте `/Account/ForgotPassword`. В Development reset link логируется в консоль SampleClient. Ответ страницы generic: приложение не раскрывает, существует ли пользователь и подтвержден ли email.
-
-Production SMTP для SampleClient в V1 не добавлен: это отдельный hardening-шаг. Основной SiMed SSO SMTP при этом уже работает независимо.
+Для восстановления локального пароля откройте `/Account/ForgotPassword`. В Development reset link логируется в консоль SampleClient, если SMTP не настроен. В non-Development SMTP обязателен. Ответ страницы generic: приложение не раскрывает, существует ли пользователь и подтвержден ли email.
 
 ## Вход через SiMed SSO
 
@@ -133,4 +140,5 @@ Production SMTP для SampleClient в V1 не добавлен: это отде
 - `invalid_scope`: в client не разрешены все scopes `openid profile email offline_access`.
 - Ошибка TLS/dev certificate: выполните `dotnet dev-certs https --trust`.
 - SampleClient не стартует из-за БД: проверьте `SAMPLECLIENT_POSTGRES_*` или `ConnectionStrings__SampleClient`.
+- SampleClient не стартует в non-Development: проверьте `SAMPLECLIENT_DATA_PROTECTION_KEYS_PATH`, `SAMPLECLIENT_SMTP_*` и отсутствие placeholder secrets.
 - SSO login не привязывается к существующему local user: убедитесь, что SiMed SSO возвращает `email_verified=true`.
